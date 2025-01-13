@@ -1,0 +1,31 @@
+[package]
+name = "milo"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "milo_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "1.5.1", features = [] }
+
+[dependencies]
+tauri = { version = "1.5.4", features = ["window-start-dragging", "window-close", "window-maximize", "macos-private-api", "window-minimize", "window-unminimize", "window-set-focus", "window-show", "window-unmaximize", "window-hide", "shell-open", "system-tray"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+keyring = "2.0"
+directories = "5.0"
+tokio = { version = "1.32", features = ["full"] }
+async-openai = "0.27"
+anyhow = "1.0"
+window-shadows = "0.2"
+arboard = "3.2"
+dirs = "4.0"
