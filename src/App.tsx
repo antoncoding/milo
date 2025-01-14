@@ -17,9 +17,7 @@ interface Settings {
 
 function App() {
   const [settings, setSettings] = useState<Settings>({ openai_model: "", custom_prompts: {} });
-  const [isLoading, setIsLoading] = useState(false);
   const [activeSection, setActiveSection] = useState("api");
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
   useEffect(() => {
     console.log("App mounted, loading settings...");
@@ -44,13 +42,12 @@ function App() {
     });
 
     invoke("get_settings")
-      .then((savedSettings) => setSettings(savedSettings))
+      .then((savedSettings) => setSettings(savedSettings as any as Settings))
       .catch(console.error);
 
     const unlisten = listen("transform_clipboard", async () => {
       try {
         console.log("Starting clipboard transformation...");
-        setIsLoading(true);
 
         // Get latest settings before transforming
         const currentSettings = await invoke<Settings>("get_settings");
@@ -63,8 +60,6 @@ function App() {
         console.log("Clipboard transformation complete");
       } catch (error) {
         console.error("Failed to transform clipboard:", error);
-      } finally {
-        setIsLoading(false);
       }
     });
 
@@ -82,44 +77,6 @@ function App() {
       unlistenNotification.then(fn => fn());
       unlistenTransform.then(fn => fn());
     };
-  }, []);
-
-  // Add context menu handler
-  useEffect(() => {
-    const handleContextMenu = async (e: MouseEvent) => {
-      const selection = window.getSelection()?.toString();
-      if (selection) {
-        e.preventDefault();
-        try {
-          // Get latest settings before transforming
-          const currentSettings = await invoke<Settings>("get_settings");
-          console.log("Using tone for selection:", currentSettings.selected_tone);
-
-          const transformed = await invoke('transform_selected_text', {
-            selectedText: selection,
-            promptKey: currentSettings.selected_tone || 'Improve Writing'
-          });
-          
-          const target = e.target as HTMLElement;
-          if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-            const input = target as HTMLInputElement | HTMLTextAreaElement;
-            const start = input.selectionStart || 0;
-            const end = input.selectionEnd || 0;
-            input.value = input.value.substring(0, start) + transformed + input.value.substring(end);
-          }
-        } catch (error) {
-          console.error('Failed to transform text:', error);
-          sendNotification({
-            title: 'Milo',
-            body: 'Failed to transform text',
-            icon: '/icon.png'
-          });
-        }
-      }
-    };
-
-    document.addEventListener('contextmenu', handleContextMenu);
-    return () => document.removeEventListener('contextmenu', handleContextMenu);
   }, []);
 
   return (

@@ -1,15 +1,15 @@
 {
   "$schema": "https://schema.tauri.app/config/v1",
   "build": {
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "milo",
-    "version": "0.0.0"
+    "productName": "Milo",
+    "version": "0.1.0"
   },
   "tauri": {
     "macOSPrivateApi": true,
@@ -43,6 +43,11 @@
         "all": true,
         "writeText": true,
         "readText": true
+      },
+      "protocol": {
+        "all": false,
+        "asset": true,
+        "assetScope": ["**"]
       }
     },
     "bundle": {

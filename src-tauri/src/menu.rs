@@ -1,5 +1,5 @@
 use arboard::Clipboard;
-use tauri::{AppHandle, Manager};
+use tauri::{Manager};
 
 #[tauri::command]
 pub async fn transform_clipboard(
@@ -53,40 +53,4 @@ pub async fn transform_clipboard(
 
     println!("Transformed text set to clipboard successfully");
     Ok(())
-}
-
-#[tauri::command]
-pub async fn transform_selected_text(
-    handle: tauri::AppHandle,
-    selected_text: String,
-    prompt_key: String,
-) -> Result<String, String> {
-    // Get the state
-    let state = handle.state::<crate::AppState>();
-    let mut settings = state.settings.lock().await;
-    
-    // Update selected tone
-    settings.selected_tone = Some(prompt_key.clone());
-    settings.save()?;
-    
-    // Get the prompt
-    let prompt = settings.custom_prompts.get(&prompt_key)
-        .ok_or_else(|| format!("Prompt not found for key: {}", prompt_key))?;
-
-    println!("Starting text transformation with prompt: {}", prompt);
-    println!("Selected text: {}", selected_text);
-    
-    // Get API key
-    let api_key = crate::get_api_key().await
-        .map_err(|e| format!("Failed to get API key: {}", e))?;
-    
-    // Transform the text
-    let transformed_text = crate::transform_text(&selected_text, prompt, &api_key).await
-        .map_err(|e| format!("Failed to transform text: {}", e))?;
-
-    // Send a notification
-    handle.emit_all("transformation_complete", format!("Text transformed with {} tone!", prompt_key))
-        .map_err(|e| format!("Failed to send notification: {}", e))?;
-
-    Ok(transformed_text)
 }
