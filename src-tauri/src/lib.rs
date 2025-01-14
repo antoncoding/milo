@@ -147,8 +147,7 @@ async fn process_selected_text(
 
     let prompt_key = settings.selected_tone.clone().unwrap_or_else(|| "Improve Writing".to_string());
 
-    println!("getting prompt with key: {}", prompt_key);
-
+    
     let prompt = settings
         .custom_prompts
         .get(&prompt_key)
@@ -168,24 +167,8 @@ async fn show_settings(window: tauri::Window) -> Result<(), String> {
     Ok(())
 }
 
-#[tauri::command]
-async fn set_transforming_state(app: tauri::AppHandle, is_transforming: bool) {
-    let tray_handle = app.tray_handle();
-    let transform_item = tray_handle.get_item("transform");
-    let _ = transform_item.set_title(
-        if is_transforming {
-            "Milo Text (Running...)"
-        } else {
-            "Milo Text"
-        }
-    );
-    
-    let state = app.state::<AppState>();
-    *state.is_transforming.lock().unwrap() = is_transforming;
-}
-
 fn create_tray_menu() -> SystemTray {
-    let transform = CustomMenuItem::new("transform".to_string(), "Milo Text");
+    let transform = CustomMenuItem::new("transform".to_string(), "Transform");
     let settings = CustomMenuItem::new("settings".to_string(), "Settings");
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
 
@@ -232,7 +215,7 @@ pub fn run() {
                             let state = app.state::<AppState>();
                             let is_transforming = *state.is_transforming.lock().unwrap();
                             if !is_transforming {
-                                println!("Starting text transformation... from tray");
+                                println!("Starting text transformation...");
                                 app.emit_all("transform_clipboard", ()).unwrap();
                             } else {
                                 println!("Text transformation already in progress...");
@@ -251,7 +234,6 @@ pub fn run() {
             get_settings,
             process_selected_text,
             show_settings,
-            set_transforming_state,
             menu::transform_clipboard,
         ])
         .run(tauri::generate_context!())

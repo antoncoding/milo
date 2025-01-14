@@ -51,7 +51,6 @@ function App() {
       try {
         console.log("Starting clipboard transformation...");
         setIsLoading(true);
-        await invoke("set_transforming_state", { isTransforming: true });
 
         // Get latest settings before transforming
         const currentSettings = await invoke<Settings>("get_settings");
@@ -66,7 +65,6 @@ function App() {
         console.error("Failed to transform clipboard:", error);
       } finally {
         setIsLoading(false);
-        await invoke("set_transforming_state", { isTransforming: false });
       }
     });
 
