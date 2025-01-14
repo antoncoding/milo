@@ -29,3 +29,6 @@ anyhow = "1.0"
 window-shadows = "0.2"
 arboard = "3.2"
 dirs = "4.0"
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
