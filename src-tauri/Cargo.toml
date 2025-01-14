@@ -18,7 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "1.5.1", features = [] }
 
 [dependencies]
-tauri = { version = "1.5.4", features = ["window-start-dragging", "window-close", "window-maximize", "macos-private-api", "window-minimize", "window-unminimize", "window-set-focus", "window-show", "window-unmaximize", "window-hide", "shell-open", "system-tray"] }
+tauri = { version = "1.5", features = [ "system-tray", "notification-all", "window-set-focus", "shell-open", "window-maximize", "window-unmaximize", "window-show", "window-hide", "window-minimize", "window-unminimize", "window-close", "window-start-dragging", "macos-private-api", "notification"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 keyring = "2.0"

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
+import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/api/notification';
 
 interface Settings {
   openai_model: string;
@@ -19,6 +20,24 @@ function App() {
 
   useEffect(() => {
     console.log("App mounted, loading settings...");
+
+    // Initialize notifications
+    async function initNotifications() {
+      let permissionGranted = await isPermissionGranted();
+      if (!permissionGranted) {
+        const permission = await requestPermission();
+        permissionGranted = permission === 'granted';
+      }
+    }
+    initNotifications();
+
+    // Listen for notifications
+    const unlistenNotification = listen('notification', (event) => {
+      sendNotification({
+        title: 'Milo',
+        body: event.payload as string
+      });
+    });
 
     invoke<string>("get_api_key")
       .then((key) => setApiKey(key))
@@ -47,9 +66,54 @@ function App() {
       }
     });
 
+    // Listen for transformation complete events
+    const unlistenTransform = listen('transformation_complete', (event) => {
+      sendNotification({
+        title: 'Milo',
+        body: event.payload as string
+      });
+    });
+
     return () => {
       unlisten.then((fn) => fn());
+      unlistenNotification.then(fn => fn());
+      unlistenTransform.then(fn => fn());
     };
+  }, []);
+
+  // Add context menu handler
+  useEffect(() => {
+    const handleContextMenu = async (e: MouseEvent) => {
+      const selection = window.getSelection()?.toString();
+      if (selection) {
+        // Only show context menu if text is selected
+        e.preventDefault();
+        try {
+          const transformed = await invoke('transform_selected_text', {
+            selectedText: selection,
+            promptKey: 'Improve Writing' // You might want to make this configurable
+          });
+          
+          // If we're in an input field, replace the selected text
+          const target = e.target as HTMLElement;
+          if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+            const input = target as HTMLInputElement | HTMLTextAreaElement;
+            const start = input.selectionStart || 0;
+            const end = input.selectionEnd || 0;
+            input.value = input.value.substring(0, start) + transformed + input.value.substring(end);
+          }
+        } catch (error) {
+          console.error('Failed to transform text:', error);
+          sendNotification({
+            title: 'Milo',
+            body: 'Failed to transform text'
+          });
+        }
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    return () => document.removeEventListener('contextmenu', handleContextMenu);
   }, []);
 
   const handleSaveApiKey = async () => {

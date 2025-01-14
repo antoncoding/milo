@@ -19,6 +19,9 @@
         "all": false,
         "open": true
       },
+      "notification": {
+        "all": true
+      },
       "window": {
         "all": false,
         "close": true,
