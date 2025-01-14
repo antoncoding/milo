@@ -215,8 +215,8 @@ h3 {
 }
 
 .tone-button:hover {
-  border-color: #3498db;
-  color: #3498db;
+  border-color: var(--primary);
+  background-color: #f8fafc;
 }
 
 .tone-button.active {
@@ -266,12 +266,13 @@ h3 {
 }
 
 .tone-item:hover {
-  border-color: #3498db;
+  border-color: var(--primary);
+  background-color: #f8fafc;
 }
 
 .tone-item.selected {
-  background-color: #eff6ff;
-  border-color: #3498db;
+  background-color: #f8fafc;
+  border-color: var(--primary);
 }
 
 .tone-item-content {
@@ -344,8 +345,8 @@ h3 {
 }
 
 .add-tone-button:hover {
-  border-color: #3498db;
-  color: #3498db;
+  border-color: var(--primary);
+  color: var(--primary);
   background-color: #f8fafc;
 }
 
@@ -420,8 +421,8 @@ h3 {
 }
 
 .secondary-button:hover {
-  border-color: #3498db;
-  color: #3498db;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 /* Animations */

@@ -1,4 +1,3 @@
-use std::sync::Mutex;
 use arboard::Clipboard;
 use tauri::{AppHandle, Manager};
 

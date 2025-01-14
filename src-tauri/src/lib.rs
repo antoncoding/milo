@@ -143,16 +143,12 @@ async fn process_selected_text(
 ) -> Result<String, String> {
     let settings = state.settings.lock().await;
 
-    
-
     let prompt_key = settings.selected_tone.clone().unwrap_or_else(|| "Improve Writing".to_string());
 
-    
     let prompt = settings
         .custom_prompts
         .get(&prompt_key)
         .ok_or_else(|| format!("Prompt '{}' not found", prompt_key))?;
-    
     let api_key = get_api_key().await?;
     transform_text(&text, prompt, &api_key).await
 }
@@ -192,6 +188,22 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             println!("Starting Milo app...");
+            
+            // Get the main window and handle focus events
+            let main_window = app.get_window("main").unwrap();
+            let app_handle = app.handle();
+            
+            // Hide window when it loses focus (clicked outside)
+            main_window.on_window_event(move |event| {
+                if let tauri::WindowEvent::Focused(focused) = event {
+                    if !focused {
+                        if let Some(window) = app_handle.get_window("main") {
+                            window.hide().unwrap();
+                        }
+                    }
+                }
+            });
+            
             Ok(())
         })
         .manage(app_state)
