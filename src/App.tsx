@@ -35,7 +35,8 @@ function App() {
     const unlistenNotification = listen('notification', (event) => {
       sendNotification({
         title: 'Milo',
-        body: event.payload as string
+        body: event.payload as string,
+        icon: '/icon.png'
       });
     });
 
@@ -70,7 +71,8 @@ function App() {
     const unlistenTransform = listen('transformation_complete', (event) => {
       sendNotification({
         title: 'Milo',
-        body: event.payload as string
+        body: event.payload as string,
+        icon: '/icon.png'
       });
     });
 
@@ -106,7 +108,8 @@ function App() {
           console.error('Failed to transform text:', error);
           sendNotification({
             title: 'Milo',
-            body: 'Failed to transform text'
+            body: 'Failed to transform text',
+            icon: '/icon.png'
           });
         }
       }

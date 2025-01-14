@@ -13,6 +13,11 @@
   },
   "tauri": {
     "macOSPrivateApi": true,
+    "systemTray": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true,
+      "menuOnLeftClick": true
+    },
     "allowlist": {
       "all": false,
       "shell": {
@@ -49,10 +54,6 @@
     },
     "security": {
       "csp": null
-    },
-    "systemTray": {
-      "iconPath": "icons/icon.png",
-      "iconAsTemplate": true
     },
     "windows": [
       {

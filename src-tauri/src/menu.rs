@@ -11,9 +11,14 @@ pub async fn transform_clipboard(
     let state = handle.state::<crate::AppState>();
     let settings = state.settings.lock().await;
     
-    // Find the prompt
-    let prompt = settings.custom_prompts.get(&prompt_key)
-        .ok_or_else(|| format!("Prompt not found for key: {}", prompt_key))?;
+    // Get the prompt based on tone
+    let prompt = match prompt_key.as_str() {
+        "improve" => "Improve this text while maintaining its original tone and meaning",
+        "formal" => "Make this text more formal and professional while maintaining its meaning",
+        "casual" => "Make this text more casual and friendly while maintaining its meaning",
+        _ => settings.custom_prompts.get(&prompt_key)
+            .ok_or_else(|| format!("Prompt not found for key: {}", prompt_key))?
+    };
 
     // Get the clipboard content
     let mut clipboard = Clipboard::new()
@@ -28,8 +33,6 @@ pub async fn transform_clipboard(
     let api_key = crate::get_api_key().await
         .map_err(|e| format!("Failed to get API key: {}", e))?;
     
-    println!("Using API key: {}", api_key);
-    
     // Transform the text
     let transformed = crate::transform_text(&text, prompt, &api_key).await
         .map_err(|e| format!("Text transformation failed: {}", e))?;
@@ -43,8 +46,14 @@ pub async fn transform_clipboard(
     clipboard.set_text(transformed.clone())
         .map_err(|e| format!("Failed to set transformed text to clipboard: {}", e))?;
     
-    // Send notification using window.emit
-    handle.emit_all("notification", "Text transformed and copied to clipboard!")
+    // Send notification with icon
+    handle.emit_all("notification", format!("Text transformed to {} style!", 
+        match prompt_key.as_str() {
+            "improve" => "improved",
+            "formal" => "formal",
+            "casual" => "casual",
+            _ => "custom"
+        }))
         .map_err(|e| format!("Failed to send notification: {}", e))?;
 
     println!("Transformed text set to clipboard successfully");
