@@ -17,6 +17,7 @@ use tokio::sync::Mutex as TokioMutex;
 pub struct Settings {
     openai_model: String,
     custom_prompts: HashMap<String, String>,
+    selected_tone: Option<String>,
 }
 
 impl Default for Settings {
@@ -29,7 +30,22 @@ impl Default for Settings {
         Self {
             openai_model: "gpt-3.5-turbo".to_string(),
             custom_prompts,
+            selected_tone: Some("Improve Writing".to_string()),
         }
+    }
+}
+
+impl Settings {
+    fn load() -> Self {
+        fs::read_to_string(settings_file_path())
+            .ok()
+            .and_then(|contents| serde_json::from_str(&contents).ok())
+            .unwrap_or_default()
+    }
+
+    fn save(&self) -> Result<(), String> {
+        let json = serde_json::to_string_pretty(self).map_err(|e| e.to_string())?;
+        fs::write(settings_file_path(), json).map_err(|e| e.to_string())
     }
 }
 
@@ -46,6 +62,14 @@ fn api_key_file_path() -> PathBuf {
     path
 }
 
+fn settings_file_path() -> PathBuf {
+    let mut path = config_dir().unwrap_or_else(|| PathBuf::from("."));
+    path.push("milo");
+    fs::create_dir_all(&path).unwrap();
+    path.push("settings.json");
+    path
+}
+
 #[tauri::command]
 async fn save_api_key(key: String) -> Result<(), String> {
     fs::write(api_key_file_path(), key).map_err(|e| e.to_string())
@@ -58,6 +82,7 @@ async fn get_api_key() -> Result<String, String> {
 
 #[tauri::command]
 async fn save_settings(state: tauri::State<'_, AppState>, settings: Settings) -> Result<(), String> {
+    settings.save()?;
     *state.settings.lock().await = settings;
     Ok(())
 }
@@ -114,14 +139,20 @@ async fn transform_text(text: &str, prompt: &str, api_key: &str) -> Result<Strin
 #[tauri::command]
 async fn process_selected_text(
     text: String,
-    prompt_key: String,
     state: tauri::State<'_, AppState>,
 ) -> Result<String, String> {
     let settings = state.settings.lock().await;
+
+    
+
+    let prompt_key = settings.selected_tone.clone().unwrap_or_else(|| "Improve Writing".to_string());
+
+    println!("getting prompt with key: {}", prompt_key);
+
     let prompt = settings
         .custom_prompts
         .get(&prompt_key)
-        .ok_or("Prompt not found")?;
+        .ok_or_else(|| format!("Prompt '{}' not found", prompt_key))?;
     
     let api_key = get_api_key().await?;
     transform_text(&text, prompt, &api_key).await
@@ -169,9 +200,10 @@ fn create_tray_menu() -> SystemTray {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let state = AppState {
-        settings: TokioMutex::new(Settings::default()),
-        is_transforming: std::sync::Mutex::new(false),
+    let settings = Settings::load();
+    let app_state = AppState {
+        settings: TokioMutex::new(settings),
+        is_transforming: Mutex::new(false),
     };
 
     tauri::Builder::default()
@@ -179,7 +211,7 @@ pub fn run() {
             println!("Starting Milo app...");
             Ok(())
         })
-        .manage(state)
+        .manage(app_state)
         .system_tray(create_tray_menu())
         .on_system_tray_event(|app, event| {
             match event {
@@ -200,7 +232,7 @@ pub fn run() {
                             let state = app.state::<AppState>();
                             let is_transforming = *state.is_transforming.lock().unwrap();
                             if !is_transforming {
-                                println!("Starting text transformation...");
+                                println!("Starting text transformation... from tray");
                                 app.emit_all("transform_clipboard", ()).unwrap();
                             } else {
                                 println!("Text transformation already in progress...");
