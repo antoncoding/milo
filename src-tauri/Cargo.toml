@@ -1,24 +1,24 @@
 [package]
 name = "milo"
-version = "0.1.0"
-description = "A Tauri App"
+version = "0.1.1"
+description = "Milo - AI Text Transformation Tool"
 authors = ["you"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-# The `_lib` suffix may seem redundant but it is necessary
-# to make the lib name unique and wouldn't conflict with the bin name.
-# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "milo_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "1.5.1", features = [] }
+tauri-build = { version = "2.0.4", features = [] }
 
 [dependencies]
-tauri = { version = "1.5", features = [ "protocol-asset", "clipboard-all", "system-tray", "notification-all", "window-set-focus", "shell-open", "window-maximize", "window-unmaximize", "window-show", "window-hide", "window-minimize", "window-unminimize", "window-close", "window-start-dragging", "macos-private-api", "notification"] }
+tauri = { version = "2.2.0", features = [ "macos-private-api", "protocol-asset", "tray-icon"] }
+tauri-plugin-shell = "2.0.0"
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-notification = "2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 keyring = "2.0"
@@ -30,5 +30,5 @@ window-shadows = "0.2"
 arboard = "3.2"
 dirs = "4.0"
 
-[features]
-custom-protocol = ["tauri/custom-protocol"]
+# [features]
+# custom-protocol = ["tauri/custom-protocol"]

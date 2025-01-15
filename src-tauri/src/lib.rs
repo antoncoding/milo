@@ -1,17 +1,18 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-mod menu;
+mod transform;
 
 use anyhow::Result;
-use async_openai::{
-    config::OpenAIConfig,
-    types::CreateCompletionRequestArgs,
-    Client,
-};
 use dirs::config_dir;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::PathBuf, sync::Mutex, collections::HashMap};
-use tauri::{Manager, SystemTray, SystemTrayMenu, SystemTrayMenuItem, CustomMenuItem};
+use tauri::{
+    Manager, 
+    menu::{MenuBuilder}, 
+    tray::{TrayIconBuilder},
+    Emitter
+};
 use tokio::sync::Mutex as TokioMutex;
+
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Settings {
@@ -92,162 +93,99 @@ async fn get_settings(state: tauri::State<'_, AppState>) -> Result<Settings, Str
     Ok(state.settings.lock().await.clone())
 }
 
-async fn transform_text(text: &str, prompt: &str, api_key: &str) -> Result<String, String> {
-    println!("Starting text transformation with prompt: {}", prompt);
-
-    let config = OpenAIConfig::new().with_api_key(api_key);
-    let client = Client::with_config(config);
-    println!("OpenAI client created successfully");
-
-    let request = CreateCompletionRequestArgs::default()
-        .model("gpt-3.5-turbo-instruct")
-        .prompt(format!("{}\n\nText: {}", prompt, text))
-        .max_tokens(2000u16)
-        .temperature(0.7)
-        .build();
-
-    let request = match request {
-        Ok(req) => req,
-        Err(e) => {
-            let error = format!("Failed to build completion request: {}", e);
-            println!("{}", error);
-            return Err(error);
-        }
-    };
-
-    println!("Sending request to OpenAI...");
-    match client.completions().create(request).await {
-        Ok(response) => {
-            println!("Received response from OpenAI");
-            if let Some(choice) = response.choices.first() {
-                println!("Successfully transformed text");
-                Ok(choice.text.clone())
-            } else {
-                let error = "No completion choices returned from OpenAI".to_string();
-                println!("{}", error);
-                Err(error)
-            }
-        }
-        Err(e) => {
-            let error = format!("OpenAI API error: {}", e);
-            println!("{}", error);
-            Err(error)
-        }
-    }
-}
-
-#[tauri::command]
-async fn process_selected_text(
-    text: String,
-    state: tauri::State<'_, AppState>,
-) -> Result<String, String> {
-    let settings = state.settings.lock().await;
-
-    let prompt_key = settings.selected_tone.clone().unwrap_or_else(|| "Improve Writing".to_string());
-
-    let prompt = settings
-        .custom_prompts
-        .get(&prompt_key)
-        .ok_or_else(|| format!("Prompt '{}' not found", prompt_key))?;
-    let api_key = get_api_key().await?;
-    transform_text(&text, prompt, &api_key).await
-}
-
 #[tauri::command]
 async fn show_settings(window: tauri::Window) -> Result<(), String> {
     let app = window.app_handle();
-    if let Some(settings_window) = app.get_window("main") {
+    if let Some(settings_window) = app.get_webview_window("main") {
         settings_window.show().map_err(|e| e.to_string())?;
         settings_window.set_focus().map_err(|e| e.to_string())?;
     }
     Ok(())
 }
 
-fn create_tray_menu() -> SystemTray {
-    let transform = CustomMenuItem::new("transform".to_string(), "Transform");
-    let settings = CustomMenuItem::new("settings".to_string(), "Settings");
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
 
-    let tray_menu = SystemTrayMenu::new()
-        .add_item(transform)
-        .add_item(settings)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(quit);
+fn create_tray_menu(app: &tauri::App) -> Result<tauri::tray::TrayIcon, tauri::Error> {
+    println!("Creating tray menu... 22");
 
-    SystemTray::new().with_menu(tray_menu)
+    println!("Creating menu...");
+    let menu = MenuBuilder::new(app)
+        .text("transform", "Transform")
+        .text("settings", "Settings")
+        .separator()
+        .text("quit", "Quit")
+        .build()?;
+
+    let tray = TrayIconBuilder::new()
+        .icon(app.default_window_icon().unwrap().clone())
+        .menu(&menu)
+        .show_menu_on_left_click(true)
+        .on_menu_event(|app, event| {
+            println!("Menu event received: {:?}", event.id());
+            match event.id().as_ref() {
+                "quit" => {
+                    println!("Quit menu item clicked");
+                    app.exit(0);
+                }
+                "settings" => {
+                    println!("Settings menu item clicked");
+                    if let Some(window) = app.get_webview_window("main") {
+                        window.show().unwrap();
+                        window.set_focus().unwrap();
+                    }
+                }
+                "transform" => {
+                    let state = app.state::<AppState>();
+                    let is_transforming = *state.is_transforming.lock().unwrap();
+                    if !is_transforming {
+                        println!("Starting transformation...");
+                        app.emit("transform_clipboard", ()).unwrap();
+                    } else {
+                        println!("Transformation already in progress");
+                    }
+                }
+                _ => {
+                    println!("Unknown menu item clicked: {:?}", event.id());
+                }
+            }
+        })
+        .build(app)?;
+
+    Ok(tray)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let settings = Settings::load();
+    
     let app_state = AppState {
         settings: TokioMutex::new(settings),
         is_transforming: Mutex::new(false),
     };
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             println!("Starting Milo app...");
-            
-            // Get the main window and handle focus events
-            let main_window = app.get_window("main").unwrap();
-            let app_handle = app.handle();
-            
-            // Hide window when it loses focus (clicked outside)
-            main_window.on_window_event(move |event| {
-                if let tauri::WindowEvent::Focused(focused) = event {
-                    if !focused {
-                        if let Some(window) = app_handle.get_window("main") {
-                            window.hide().unwrap();
-                        }
-                    }
-                }
-            });
-            
+            let _tray = create_tray_menu(app)?;
             Ok(())
         })
         .manage(app_state)
-        .system_tray(create_tray_menu())
-        .on_system_tray_event(|app, event| {
-            match event {
-                tauri::SystemTrayEvent::MenuItemClick { id, .. } => {
-                    match id.as_str() {
-                        "quit" => {
-                            println!("Quitting Milo app...");
-                            app.exit(0);
-                        }
-                        "settings" => {
-                            println!("Opening settings window...");
-                            if let Some(window) = app.get_window("main") {
-                                window.show().unwrap();
-                                window.set_focus().unwrap();
-                            }
-                        }
-                        "transform" => {
-                            let state = app.state::<AppState>();
-                            let is_transforming = *state.is_transforming.lock().unwrap();
-                            if !is_transforming {
-                                println!("Starting text transformation...");
-                                app.emit_all("transform_clipboard", ()).unwrap();
-                            } else {
-                                println!("Text transformation already in progress...");
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-                _ => {}
-            }
-        })
         .invoke_handler(tauri::generate_handler![
             save_api_key,
             get_api_key,
             save_settings,
             get_settings,
-            process_selected_text,
             show_settings,
-            menu::transform_clipboard,
+            transform::transform_clipboard,
         ])
+        .on_window_event(|_app, event| match event {
+            tauri::WindowEvent::CloseRequested { api, .. } => {
+                let window = _app.get_webview_window("main").unwrap();
+                window.hide().unwrap();
+                api.prevent_close();
+            }
+            _ => {}
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

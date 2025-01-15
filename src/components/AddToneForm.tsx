@@ -1,14 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/SharedStyles.css";
 
-interface AddToneFormProps {
+interface ToneFormProps {
+  initialName?: string;
+  initialPrompt?: string;
   onSave: (name: string, prompt: string) => Promise<void>;
   onCancel: () => void;
 }
 
-export function AddToneForm({ onSave, onCancel }: AddToneFormProps) {
-  const [name, setName] = useState("");
-  const [prompt, setPrompt] = useState("");
+export function ToneForm({ initialName = "", initialPrompt = "", onSave, onCancel }: ToneFormProps) {
+  const [name, setName] = useState(initialName);
+  const [prompt, setPrompt] = useState(initialPrompt);
+  const isEditing = initialName !== "";
+
+  useEffect(() => {
+    setName(initialName);
+    setPrompt(initialPrompt);
+  }, [initialName, initialPrompt]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +33,7 @@ export function AddToneForm({ onSave, onCancel }: AddToneFormProps) {
           </svg>
           Back
         </button>
-        <h2>Add New Tone</h2>
+        <h2>{isEditing ? 'Edit Tone' : 'Add New Tone'}</h2>
       </div>
       
       <form onSubmit={handleSubmit}>
@@ -38,11 +46,12 @@ export function AddToneForm({ onSave, onCancel }: AddToneFormProps) {
             onChange={(e) => setName(e.target.value)}
             className="input-field"
             placeholder="e.g., Professional, Casual, Technical"
+            disabled={isEditing} // Prevent editing the name when updating
           />
         </div>
         
         <div className="form-group">
-          <label htmlFor="tonePrompt">Prompt Template</label>
+          <label htmlFor="tonePrompt">Prompt Description</label>
           <textarea
             id="tonePrompt"
             value={prompt}
@@ -57,7 +66,7 @@ export function AddToneForm({ onSave, onCancel }: AddToneFormProps) {
             Cancel
           </button>
           <button type="submit" className="primary-button" disabled={!name || !prompt}>
-            Save Tone
+            {isEditing ? 'Update Tone' : 'Save Tone'}
           </button>
         </div>
       </form>
