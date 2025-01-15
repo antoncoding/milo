@@ -6,6 +6,7 @@ use async_openai::{
     Client,
 };
 use tauri_plugin_notification::NotificationExt;
+use crate::api::get_api_key;
 
 async fn transform_text(text: &str, prompt: &str, api_key: &str) -> Result<String, String> {
     println!("Starting text transformation with prompt: {}", prompt);
@@ -87,7 +88,7 @@ pub async fn transform_clipboard(
     println!("Clipboard text: {}", cleaned_text);
     
     // Get API key
-    let api_key = crate::get_api_key().await
+    let api_key = get_api_key().await
         .map_err(|e| format!("Failed to get API key: {}", e))?;
     
     // Transform the text
