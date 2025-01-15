@@ -10,7 +10,7 @@ use async_openai::{
 use dirs::config_dir;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::PathBuf, sync::Mutex, collections::HashMap};
-use tauri::{Manager, menu::{MenuBuilder, MenuItemBuilder}, tray::{TrayIconBuilder}, Emitter};
+use tauri::{Manager, menu::{Menu, MenuBuilder, MenuItemBuilder, MenuItem}, tray::{TrayIconBuilder}, Emitter};
 use tokio::sync::Mutex as TokioMutex;
 
 mod core;
@@ -170,44 +170,42 @@ async fn show_settings(window: tauri::Window) -> Result<(), String> {
 fn create_tray_menu(app: &tauri::App) -> Result<tauri::tray::TrayIcon, tauri::Error> {
     println!("Creating tray menu... 22");
 
-    let handle = app.handle();
-    
-    let menu = MenuBuilder::new(handle)
-        .text("transform", "Transform")
-        .text("settings", "Settings")
-        .separator()
-        .text("quit", "Quit")
-        .build()?;
+    let transform_i = MenuItem::with_id(app, "transform", "Transform", true, None::<&str>)?;
+    let settings_i = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
+    let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
 
-    TrayIconBuilder::new()
+    let menu = Menu::with_items(app, &[&transform_i, &settings_i, &quit_i])?;
+
+    let tray = TrayIconBuilder::new()
         .menu(&menu)
-        .on_menu_event(move |app_handle, event| {
-            match event.id().as_ref() {
-                "quit" => {
-                    println!("Quitting Milo app...");
-                    app_handle.exit(0);
-                }
-                "settings" => {
-                    println!("Opening settings window...");
-                    if let Some(window) = app_handle.get_webview_window("main") {
-                        window.show().unwrap();
-                        window.set_focus().unwrap();
-                    }
-                }
-                "transform" => {
-                    let state = app_handle.state::<AppState>();
-                    let is_transforming = *state.is_transforming.lock().unwrap();
-                    if !is_transforming {
-                        println!("Starting text transformation...");
-                        app_handle.emit("transform_clipboard", ()).unwrap();
-                    } else {
-                        println!("Text transformation already in progress...");
-                    }
-                }
-                _ => {}
+        .menu_on_left_click(true)
+        .on_menu_event(|app, event| match event.id().as_ref() {
+            "quit" => {
+                println!("Quitting Milo app...");
+                app.exit(0);
             }
+            "settings" => {
+                println!("Opening settings window...");
+                if let Some(window) = app.get_webview_window("main") {
+                    window.show().unwrap();
+                    window.set_focus().unwrap();
+                }
+            }
+            "transform" => {
+                let state = app.state::<AppState>();
+                let is_transforming = *state.is_transforming.lock().unwrap();
+                if !is_transforming {
+                    println!("Starting text transformation...");
+                    app.emit("transform_clipboard", ()).unwrap();
+                } else {
+                    println!("Text transformation already in progress...");
+                }
+            }
+            _ => {}
         })
-        .build(app)
+        .build(app)?;
+
+    Ok(tray)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -224,17 +222,6 @@ pub fn run() {
             
             // Get the main window and handle focus events
             let main_window = app.get_webview_window("main").unwrap();
-            
-            // // Hide window when it loses focus (clicked outside)
-            // main_window.on_window_event(move |event| {
-            //     if let tauri::WindowEvent::Focused(focused) = event {
-            //         if !focused {
-            //             if let Some(window) = app.get_webview_window("main") {
-            //                 window.hide().unwrap();
-            //             }
-            //         }
-            //     }
-            // });
             
             // Create tray icon
             create_tray_menu(app)?;
