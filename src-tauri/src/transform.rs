@@ -1,5 +1,5 @@
 use arboard::Clipboard;
-use tauri::{Manager, Emitter};
+use tauri::{Manager};
 use async_openai::{
     config::OpenAIConfig,
     types::CreateCompletionRequestArgs,

@@ -1,7 +1,7 @@
 [package]
 name = "milo"
-version = "0.1.0"
-description = "A Tauri App"
+version = "0.1.1"
+description = "Milo - AI Text Transformation Tool"
 authors = ["you"]
 edition = "2021"
 
