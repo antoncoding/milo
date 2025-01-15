@@ -13,6 +13,8 @@ use std::{fs, path::PathBuf, sync::Mutex, collections::HashMap};
 use tauri::{Manager, menu::{MenuBuilder, MenuItemBuilder}, tray::{TrayIconBuilder}, Emitter};
 use tokio::sync::Mutex as TokioMutex;
 
+mod core;
+use crate::core::setup;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Settings {
@@ -166,15 +168,15 @@ async fn show_settings(window: tauri::Window) -> Result<(), String> {
 
 
 fn create_tray_menu(app: &tauri::App) -> Result<tauri::tray::TrayIcon, tauri::Error> {
-
     println!("Creating tray menu... 22");
 
-    let transform = MenuItemBuilder::with_id("transform", "Transform").build(app)?;
-    let settings = MenuItemBuilder::with_id("settings", "Settings").build(app)?;
-    let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
+    let handle = app.handle();
     
-    let menu = MenuBuilder::new(app)
-        .items(&[&transform, &settings, &quit])
+    let menu = MenuBuilder::new(handle)
+        .text("transform", "Transform")
+        .text("settings", "Settings")
+        .separator()
+        .text("quit", "Quit")
         .build()?;
 
     TrayIconBuilder::new()
@@ -236,6 +238,8 @@ pub fn run() {
             
             // Create tray icon
             create_tray_menu(app)?;
+
+            setup::default(app, main_window.clone());
 
             Ok(())
         })
