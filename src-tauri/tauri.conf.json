@@ -39,11 +39,6 @@
       }
     ],
     "withGlobalTauri": false,
-    "trayIcon": {
-      "iconPath": "icons/icon.png",
-      "iconAsTemplate": true,
-      "showMenuOnLeftClick": true
-    },
     "security": {
       "assetProtocol": {
         "scope": [

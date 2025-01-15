@@ -157,6 +157,7 @@ fn create_tray_menu(app: &tauri::App) -> Result<tauri::tray::TrayIcon, tauri::Er
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let settings = Settings::load();
+    
     let app_state = AppState {
         settings: TokioMutex::new(settings),
         is_transforming: Mutex::new(false),
@@ -177,6 +178,14 @@ pub fn run() {
             show_settings,
             transform::transform_clipboard,
         ])
+        .on_window_event(|_app, event| match event {
+            tauri::WindowEvent::CloseRequested { api, .. } => {
+                let window = _app.get_webview_window("main").unwrap();
+                window.hide().unwrap();
+                api.prevent_close();
+            }
+            _ => {}
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
