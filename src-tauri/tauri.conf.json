@@ -42,7 +42,7 @@
     "trayIcon": {
       "iconPath": "icons/icon.png",
       "iconAsTemplate": true,
-      "menuOnLeftClick": true
+      "showMenuOnLeftClick": true
     },
     "security": {
       "assetProtocol": {
