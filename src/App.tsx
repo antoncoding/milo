@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/api/notification';
+import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
 import { ApiSettings } from "./components/ApiSettings";
 import { PromptSettings } from "./components/PromptSettings";
 import { Sidebar } from "./components/Sidebar";

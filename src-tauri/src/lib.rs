@@ -10,8 +10,9 @@ use async_openai::{
 use dirs::config_dir;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::PathBuf, sync::Mutex, collections::HashMap};
-use tauri::{Manager, SystemTray, SystemTrayMenu, SystemTrayMenuItem, CustomMenuItem};
+use tauri::{Manager, menu::{MenuBuilder, MenuItemBuilder}, tray::{TrayIconBuilder}, Emitter};
 use tokio::sync::Mutex as TokioMutex;
+
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Settings {
@@ -156,25 +157,55 @@ async fn process_selected_text(
 #[tauri::command]
 async fn show_settings(window: tauri::Window) -> Result<(), String> {
     let app = window.app_handle();
-    if let Some(settings_window) = app.get_window("main") {
+    if let Some(settings_window) = app.get_webview_window("main") {
         settings_window.show().map_err(|e| e.to_string())?;
         settings_window.set_focus().map_err(|e| e.to_string())?;
     }
     Ok(())
 }
 
-fn create_tray_menu() -> SystemTray {
-    let transform = CustomMenuItem::new("transform".to_string(), "Transform");
-    let settings = CustomMenuItem::new("settings".to_string(), "Settings");
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
 
-    let tray_menu = SystemTrayMenu::new()
-        .add_item(transform)
-        .add_item(settings)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(quit);
+fn create_tray_menu(app: &tauri::App) -> Result<tauri::tray::TrayIcon, tauri::Error> {
 
-    SystemTray::new().with_menu(tray_menu)
+    println!("Creating tray menu... 22");
+
+    let transform = MenuItemBuilder::with_id("transform", "Transform").build(app)?;
+    let settings = MenuItemBuilder::with_id("settings", "Settings").build(app)?;
+    let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
+    
+    let menu = MenuBuilder::new(app)
+        .items(&[&transform, &settings, &quit])
+        .build()?;
+
+    TrayIconBuilder::new()
+        .menu(&menu)
+        .on_menu_event(move |app_handle, event| {
+            match event.id().as_ref() {
+                "quit" => {
+                    println!("Quitting Milo app...");
+                    app_handle.exit(0);
+                }
+                "settings" => {
+                    println!("Opening settings window...");
+                    if let Some(window) = app_handle.get_webview_window("main") {
+                        window.show().unwrap();
+                        window.set_focus().unwrap();
+                    }
+                }
+                "transform" => {
+                    let state = app_handle.state::<AppState>();
+                    let is_transforming = *state.is_transforming.lock().unwrap();
+                    if !is_transforming {
+                        println!("Starting text transformation...");
+                        app_handle.emit("transform_clipboard", ()).unwrap();
+                    } else {
+                        println!("Text transformation already in progress...");
+                    }
+                }
+                _ => {}
+            }
+        })
+        .build(app)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -190,55 +221,25 @@ pub fn run() {
             println!("Starting Milo app...");
             
             // Get the main window and handle focus events
-            let main_window = app.get_window("main").unwrap();
-            let app_handle = app.handle();
+            let main_window = app.get_webview_window("main").unwrap();
             
-            // Hide window when it loses focus (clicked outside)
-            main_window.on_window_event(move |event| {
-                if let tauri::WindowEvent::Focused(focused) = event {
-                    if !focused {
-                        if let Some(window) = app_handle.get_window("main") {
-                            window.hide().unwrap();
-                        }
-                    }
-                }
-            });
+            // // Hide window when it loses focus (clicked outside)
+            // main_window.on_window_event(move |event| {
+            //     if let tauri::WindowEvent::Focused(focused) = event {
+            //         if !focused {
+            //             if let Some(window) = app.get_webview_window("main") {
+            //                 window.hide().unwrap();
+            //             }
+            //         }
+            //     }
+            // });
             
+            // Create tray icon
+            create_tray_menu(app)?;
+
             Ok(())
         })
         .manage(app_state)
-        .system_tray(create_tray_menu())
-        .on_system_tray_event(|app, event| {
-            match event {
-                tauri::SystemTrayEvent::MenuItemClick { id, .. } => {
-                    match id.as_str() {
-                        "quit" => {
-                            println!("Quitting Milo app...");
-                            app.exit(0);
-                        }
-                        "settings" => {
-                            println!("Opening settings window...");
-                            if let Some(window) = app.get_window("main") {
-                                window.show().unwrap();
-                                window.set_focus().unwrap();
-                            }
-                        }
-                        "transform" => {
-                            let state = app.state::<AppState>();
-                            let is_transforming = *state.is_transforming.lock().unwrap();
-                            if !is_transforming {
-                                println!("Starting text transformation...");
-                                app.emit_all("transform_clipboard", ()).unwrap();
-                            } else {
-                                println!("Text transformation already in progress...");
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-                _ => {}
-            }
-        })
         .invoke_handler(tauri::generate_handler![
             save_api_key,
             get_api_key,

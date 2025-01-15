@@ -1,5 +1,17 @@
 use arboard::Clipboard;
-use tauri::{Manager};
+use tauri::{Manager, menu::MenuBuilder, Emitter};
+
+pub fn create_app_menu(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    let menu = MenuBuilder::new(app)
+        .text("Transform", "transform")
+        .text("Settings", "settings")
+        .separator()
+        .text("Quit", "quit")
+        .build()?;
+
+    app.set_menu(menu)?;
+    Ok(())
+}
 
 #[tauri::command]
 pub async fn transform_clipboard(
@@ -57,7 +69,7 @@ pub async fn transform_clipboard(
         .map_err(|e| format!("Failed to set clipboard text: {}", e))?;
 
     // Send a notification
-    handle.emit_all("transformation_complete", format!("Text transformed with {} tone!", prompt_key))
+    handle.app_handle().emit("transformation_complete", format!("Text transformed with {} tone!", prompt_key))
         .map_err(|e| format!("Failed to send notification: {}", e))?;
 
     println!("Transformed text set to clipboard successfully");
