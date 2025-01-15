@@ -23,7 +23,8 @@
 				}
 			]
 		},
-		"clipboard-manager:default"
+		"clipboard-manager:default",
+		"notification:default"
     
 	]
 }

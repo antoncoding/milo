@@ -134,7 +134,6 @@ fn create_tray_menu(app: &tauri::App) -> Result<tauri::tray::TrayIcon, tauri::Er
                     }
                 }
                 "transform" => {
-                    println!("Transform menu item clicked");
                     let state = app.state::<AppState>();
                     let is_transforming = *state.is_transforming.lock().unwrap();
                     if !is_transforming {
@@ -164,6 +163,7 @@ pub fn run() {
     };
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             println!("Starting Milo app...");
             let _tray = create_tray_menu(app)?;

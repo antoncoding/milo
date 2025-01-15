@@ -5,6 +5,7 @@ use async_openai::{
     types::CreateCompletionRequestArgs,
     Client,
 };
+use tauri_plugin_notification::NotificationExt;
 
 async fn transform_text(text: &str, prompt: &str, api_key: &str) -> Result<String, String> {
     println!("Starting text transformation with prompt: {}", prompt);
@@ -107,8 +108,12 @@ pub async fn transform_clipboard(
         .map_err(|e| format!("Failed to set clipboard text: {}", e))?;
 
     // Send a notification
-    handle.app_handle().emit("transformation_complete", format!("Text transformed with {} tone!", prompt_key))
-        .map_err(|e| format!("Failed to send notification: {}", e))?;
+    handle.notification()
+            .builder()
+            .title("Milo")
+            .body(format!("Text transformed with {} tone!", prompt_key))
+            .show()
+            .unwrap();
 
     println!("Transformed text set to clipboard successfully");
     Ok(())
