@@ -7,6 +7,7 @@ mod api;
 
 use tauri::{Manager};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
+use tauri_plugin_notification::NotificationExt;
 use settings::Settings;
 use state::AppState;
 
@@ -24,20 +25,34 @@ pub fn run() {
             // Register global shortcut (Cmd+M)
             #[cfg(desktop)]
             {
-                let shortcut = Shortcut::new(Some(Modifiers::META), Code::KeyM);  // Using META for Command key
-                app.handle().plugin(
+                let app_handle = app.handle();
+                let shortcut = Shortcut::new(Some(Modifiers::META), Code::KeyM);
+                let handler_app_handle = app_handle.clone();
+                
+                app_handle.plugin(
                     tauri_plugin_global_shortcut::Builder::new()
                         .with_handler(move |_app, shortcut_ref, event| {
-                            if shortcut_ref == &shortcut {
-                                match event.state() {
-                                    ShortcutState::Pressed => {
-                                        println!("Shortcut Cmd+M pressed!");
-                                    }
-                                    ShortcutState::Released => {
-                                        println!("Shortcut Cmd+M released!");
-                                    }
+                            if shortcut_ref != &shortcut {
+                                return;
+                            } 
+                            match event.state() {
+                                ShortcutState::Pressed => {
+                                    let app_handle = handler_app_handle.clone();
+                                    tauri::async_runtime::spawn(async move {
+                                        if let Err(e) = transform::transform_clip_with_setting(app_handle.clone()).await {
+                                            let _ = app_handle.notification()
+                                                .builder()
+                                                .title("Transform Error")
+                                                .body(format!("Failed to transform: {}", e))
+                                                .show();
+                                        }
+                                    });
+                                }
+                                ShortcutState::Released => {
+                                    println!("Transform shortcut released");
                                 }
                             }
+                            
                         })
                         .build(),
                 )?;

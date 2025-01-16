@@ -45,7 +45,12 @@ fn handle_menu_event(app: &AppHandle, event: tauri::menu::MenuEvent) {
             let is_transforming = *state.is_transforming.lock().unwrap();
             if !is_transforming {
                 println!("Starting transformation...");
-                app.emit("transform_clipboard", ()).unwrap();
+                let app_handle = app.clone();
+                tauri::async_runtime::spawn(async move {
+                    if let Err(e) = crate::transform::transform_clip_with_setting(app_handle).await {
+                        println!("Transform error: {}", e);
+                    }
+                });
             } else {
                 println!("Transformation already in progress");
             }
