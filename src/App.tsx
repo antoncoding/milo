@@ -5,6 +5,7 @@ import { isPermissionGranted, requestPermission, sendNotification } from '@tauri
 import { ApiSettings } from "./components/ApiSettings";
 import { PromptSettings } from "./components/PromptSettings";
 import { Sidebar } from "./components/Sidebar";
+import { InfoPage } from "./components/InfoPage";
 import "./styles/SharedStyles.css";
 
 interface Settings {
@@ -13,11 +14,19 @@ interface Settings {
     [key: string]: string;
   };
   selected_tone?: string;
+  firstVisitComplete?: boolean;
+  shortcutEnabled?: boolean;
 }
 
 function App() {
-  const [settings, setSettings] = useState<Settings>({ openai_model: "", custom_prompts: {} });
-  const [activeSection, setActiveSection] = useState("api");
+  const [settings, setSettings] = useState<Settings>({ 
+    openai_model: "", 
+    custom_prompts: {},
+    firstVisitComplete: false,
+    shortcutEnabled: true
+  });
+  const [activeSection, setActiveSection] = useState("info");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     console.log("App mounted, loading settings...");
@@ -41,8 +50,18 @@ function App() {
       });
     });
 
+    // Load settings
     invoke("get_settings")
-      .then((savedSettings) => setSettings(savedSettings as any as Settings))
+      .then((savedSettings: any) => {
+        setSettings(savedSettings as any as Settings);
+        // Set initial section based on whether it's first visit
+        if (!savedSettings.firstVisitComplete) {
+          setActiveSection('info');
+        } else {
+          setActiveSection('prompts');
+        }
+        setLoading(false);
+      })
       .catch(console.error);
 
     const unlisten = listen("transform_clipboard", async () => {
@@ -79,6 +98,30 @@ function App() {
     };
   }, []);
 
+  const handleFirstVisitComplete = async () => {
+    const updatedSettings = { ...settings, firstVisitComplete: true };
+    await invoke("save_settings", { settings: updatedSettings });
+    setSettings(updatedSettings);
+    setActiveSection('prompts');
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return <div className="loading">Loading...</div>;
+    }
+
+    switch (activeSection) {
+      case 'info':
+        return <InfoPage onComplete={!settings.firstVisitComplete ? handleFirstVisitComplete : undefined} />;
+      case 'prompts':
+        return <PromptSettings settings={settings} setSettings={setSettings} />;
+      case 'api':
+        return <ApiSettings />;
+      default:
+        return <PromptSettings settings={settings} setSettings={setSettings} />;
+    }
+  };
+
   return (
     <>
       <Sidebar 
@@ -87,12 +130,7 @@ function App() {
       />
       <div className="main-content">
         <div className="container">
-          <h1>Milo Settings</h1>
-          {activeSection === 'api' ? (
-            <ApiSettings />
-          ) : (
-            <PromptSettings settings={settings} setSettings={setSettings} />
-          )}
+          {renderContent()}
         </div>
       </div>
     </>

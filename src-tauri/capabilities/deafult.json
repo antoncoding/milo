@@ -24,7 +24,7 @@
 			]
 		},
 		"clipboard-manager:default",
-		"notification:default"
-    
+		"notification:default",
+		"global-shortcut:default"
 	]
 }
