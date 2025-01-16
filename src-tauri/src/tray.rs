@@ -3,7 +3,6 @@ use tauri::{
     menu::MenuBuilder,
     tray::{TrayIcon, TrayIconBuilder},
     Manager,
-    Emitter,
 };
 
 pub fn create_tray_menu(app: &App) -> Result<TrayIcon, tauri::Error> {
