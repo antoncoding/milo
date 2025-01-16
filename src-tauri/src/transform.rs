@@ -1,11 +1,17 @@
+use tauri::{AppHandle, Manager};
+use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
+use tauri_plugin_notification::NotificationExt;
 use arboard::Clipboard;
-use tauri::{Manager};
 use async_openai::{
     config::OpenAIConfig,
-    types::CreateCompletionRequestArgs,
+    types::{
+        ChatCompletionRequestSystemMessageArgs,
+        ChatCompletionRequestUserMessageArgs,
+        CreateChatCompletionRequestArgs,
+    },
     Client,
 };
-use tauri_plugin_notification::NotificationExt;
+
 use crate::api::get_api_key;
 
 // Core transformation function that only handles API interaction
@@ -13,18 +19,28 @@ pub async fn transform_text(text: &str, prompt: &str, api_key: &str) -> Result<S
     let config = OpenAIConfig::new().with_api_key(api_key);
     let client = Client::with_config(config);
 
-    let request = CreateCompletionRequestArgs::default()
-        .model("gpt-3.5-turbo-instruct")
-        .prompt(format!("{}\n\nText: {}", prompt, text))
-        .max_tokens(2000u16)
-        .temperature(0.7)
+    let request = CreateChatCompletionRequestArgs::default()
+        .model("gpt-4o-mini")
+        .max_tokens(2000u32)
+        .messages([
+            ChatCompletionRequestSystemMessageArgs::default()
+                .content(prompt)
+                .build()
+                .map_err(|e| format!("Failed to build system message: {}", e))?
+                .into(),
+            ChatCompletionRequestUserMessageArgs::default()
+                .content(text)
+                .build()
+                .map_err(|e| format!("Failed to build user message: {}", e))?
+                .into(),
+        ])
         .build()
-        .map_err(|e| format!("Failed to build completion request: {}", e))?;
+        .map_err(|e| format!("Failed to build chat completion request: {}", e))?;
 
-    match client.completions().create(request).await {
+    match client.chat().create(request).await {
         Ok(response) => {
             response.choices.first()
-                .map(|choice| choice.text.clone())
+                .and_then(|choice| choice.message.content.clone())
                 .ok_or_else(|| "No completion choices returned from OpenAI".to_string())
         }
         Err(e) => Err(format!("OpenAI API error: {}", e))

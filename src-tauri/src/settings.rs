@@ -18,7 +18,7 @@ impl Default for Settings {
             "Improve this text while maintaining its meaning:".to_string(),
         );
         Self {
-            openai_model: "gpt-3.5-turbo".to_string(),
+            openai_model: "gpt-4o-mini".to_string(),
             custom_prompts,
             selected_tone: Some("Improve Writing".to_string()),
         }

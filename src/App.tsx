@@ -17,7 +17,7 @@ interface Settings {
 
 function App() {
   const [settings, setSettings] = useState<Settings>({ openai_model: "", custom_prompts: {} });
-  const [activeSection, setActiveSection] = useState("api");
+  const [activeSection, setActiveSection] = useState("prompts");
 
   useEffect(() => {
     console.log("App mounted, loading settings...");
@@ -79,6 +79,17 @@ function App() {
     };
   }, []);
 
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'prompts':
+        return <PromptSettings settings={settings} setSettings={setSettings} />;
+      case 'api':
+        return <ApiSettings />;
+      default:
+        return <PromptSettings settings={settings} setSettings={setSettings} />;
+    }
+  };
+
   return (
     <>
       <Sidebar 
@@ -88,11 +99,7 @@ function App() {
       <div className="main-content">
         <div className="container">
           <h1>Milo Settings</h1>
-          {activeSection === 'api' ? (
-            <ApiSettings />
-          ) : (
-            <PromptSettings settings={settings} setSettings={setSettings} />
-          )}
+          {renderContent()}
         </div>
       </div>
     </>
