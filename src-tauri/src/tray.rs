@@ -46,7 +46,7 @@ fn handle_menu_event(app: &AppHandle, event: tauri::menu::MenuEvent) {
                 println!("Starting transformation...");
                 let app_handle = app.clone();
                 tauri::async_runtime::spawn(async move {
-                    if let Err(e) = crate::transform::transform_clip_with_setting(app_handle).await {
+                    if let Err(e) = crate::transform::transform_clip_with_setting(app_handle, false).await {
                         println!("Transform error: {}", e);
                     }
                 });

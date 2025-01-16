@@ -96,10 +96,15 @@ pub async fn transform_clipboard(
 
 // Function that reads tone from settings and performs transform
 #[tauri::command]
-pub async fn transform_clip_with_setting(handle: tauri::AppHandle) -> Result<(), String> {
+pub async fn transform_clip_with_setting(handle: tauri::AppHandle, is_shortcut: bool) -> Result<(), String> {
     // Get the state and selected tone
     let state = handle.state::<crate::AppState>();
     let settings = state.settings.lock().await;
+
+    //  if is_shortcut, check if shortcut is enabled
+    if is_shortcut && !settings.is_shortcut_enabled() {
+        return Ok(());
+    }
     
     let tone_key = settings.selected_tone.clone()
         .ok_or_else(|| "No tone selected".to_string())?;

@@ -1,4 +1,4 @@
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_notification::NotificationExt;
 
@@ -27,7 +27,7 @@ pub fn register_transform_shortcut(app_handle: &AppHandle) -> Result<(), Box<dyn
                         ShortcutState::Pressed => {
                             let app_handle = handler_app_handle.clone();
                             tauri::async_runtime::spawn(async move {
-                                if let Err(e) = transform::transform_clip_with_setting(app_handle.clone()).await {
+                                if let Err(e) = transform::transform_clip_with_setting(app_handle.clone(), true).await {
                                     let _ = app_handle.notification()
                                         .builder()
                                         .title("Transform Error")

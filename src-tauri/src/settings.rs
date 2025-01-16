@@ -8,6 +8,8 @@ pub struct Settings {
     pub openai_model: String,
     pub custom_prompts: HashMap<String, String>,
     pub selected_tone: Option<String>,
+    pub first_visit_complete: Option<bool>,
+    pub shortcut_enabled: Option<bool>,
 }
 
 impl Default for Settings {
@@ -21,6 +23,8 @@ impl Default for Settings {
             openai_model: "gpt-4o-mini".to_string(),
             custom_prompts,
             selected_tone: Some("Improve Writing".to_string()),
+            first_visit_complete: Some(false),
+            shortcut_enabled: Some(true),
         }
     }
 }
@@ -36,6 +40,10 @@ impl Settings {
     pub fn save(&self) -> Result<(), String> {
         let json = serde_json::to_string_pretty(self).map_err(|e| e.to_string())?;
         fs::write(settings_file_path(), json).map_err(|e| e.to_string())
+    }
+
+    pub fn is_shortcut_enabled(&self) -> bool {
+        self.shortcut_enabled.unwrap_or(true)
     }
 }
 

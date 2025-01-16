@@ -1,0 +1,112 @@
+.info-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.info-page .logo {
+  width: 120px;
+  margin-bottom: 1rem;
+}
+
+.info-content {
+  margin-top: 2rem;
+  text-align: center;
+  max-width: 400px;
+}
+
+.info-content h2 {
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+
+.info-content p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 14px;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.feature {
+  background: var(--background-light);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.feature h3 {
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feature p {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.feature code {
+  background: var(--background);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.shortcut-toggle {
+  margin: 2rem auto;
+  padding: 1rem;
+  background: var(--background-light);
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  width: fit-content;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+}
+
+.toggle-label input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+}
+
+.continue-button {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 2rem;
+}
+
+.continue-button:hover {
+  background: var(--primary-color-dark);
+}
