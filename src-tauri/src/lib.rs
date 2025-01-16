@@ -6,7 +6,6 @@ mod tray;
 mod api;
 mod shortcuts;
 
-use tauri::Manager;
 use settings::Settings;
 use state::AppState;
 

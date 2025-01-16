@@ -1,5 +1,4 @@
-use tauri::{AppHandle, Manager};
-use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
+use tauri::Manager;
 use tauri_plugin_notification::NotificationExt;
 use arboard::Clipboard;
 use async_openai::{
