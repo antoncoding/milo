@@ -10,14 +10,33 @@ interface InfoPageProps {
 export function InfoPage({ onComplete }: InfoPageProps) {
   const [shortcutEnabled, setShortcutEnabled] = useState(true);
 
+  // Load initial shortcut state
+  useEffect(() => {
+    invoke<any>("get_settings")
+      .then((settings) => {
+        setShortcutEnabled(settings.shortcut_enabled ?? true);
+      })
+      .catch(console.error);
+  }, []);
+
   const handleShortcutToggle = async (enabled: boolean) => {
     try {
-      setShortcutEnabled(enabled);
+      // Get current settings first
+      const currentSettings = await invoke<any>("get_settings");
+      
+      // Merge with new shortcut setting
+      const updatedSettings = {
+        ...currentSettings,
+        shortcut_enabled: enabled
+      };
+
+      // Save merged settings
       await invoke("save_settings", {
-        settings: {
-          shortcutEnabled: enabled,
-        }
+        settings: updatedSettings
       });
+      
+      setShortcutEnabled(enabled);
+      
       if (onComplete) {
         onComplete();
       }
