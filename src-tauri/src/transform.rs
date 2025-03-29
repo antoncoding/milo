@@ -46,13 +46,12 @@ pub async fn transform_text(text: &str, prompt: &str, api_key: &str) -> Result<S
     }
 }
 
-// Helper function to clean text
+// Helper function to clean text while preserving formatting
 fn clean_text(text: &str) -> String {
     text.lines()
         .map(|line| line.trim())
-        .filter(|line| !line.is_empty())
         .collect::<Vec<_>>()
-        .join(" ")
+        .join("\n")
 }
 
 // Function that handles clipboard transformation without updating settings
