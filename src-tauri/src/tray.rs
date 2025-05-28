@@ -5,6 +5,9 @@ use tauri::{
     Manager,
 };
 
+#[cfg(target_os = "macos")]
+use crate::system;
+
 pub fn create_tray_menu(app: &App) -> Result<TrayIcon, tauri::Error> {
     println!("Creating tray menu...");
 
@@ -29,14 +32,20 @@ fn handle_menu_event(app: &AppHandle, event: tauri::menu::MenuEvent) {
     println!("Menu event received: {:?}", event.id());
     match event.id().as_ref() {
         "quit" => {
-            println!("Quit menu item clicked");
             app.exit(0);
         }
         "settings" => {
             println!("Settings menu item clicked");
             if let Some(window) = app.get_webview_window("main") {
-                window.show().unwrap();
-                window.set_focus().unwrap();
+                let _ = window.show();
+                let _ = window.set_focus();
+                
+                #[cfg(target_os = "macos")]
+                {
+                    use tauri::UserAttentionType;
+                    let _ = window.request_user_attention(Some(UserAttentionType::Informational));
+                    let _ = system::move_window_to_active_space(&window);
+                }
             }
         }
         "transform" => {

@@ -1,0 +1,8 @@
+---
+description: Using the tauri framework (backend) of the app
+globs: 
+alwaysApply: false
+---
+## Important
+Please use tauri v2 documents, APIs, plugins. If you don't know how a specific feature is achievable in Tauri v2, ask the user for more documentation.
+

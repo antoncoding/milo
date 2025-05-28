@@ -31,5 +31,10 @@ window-shadows = "0.2"
 arboard = "3.2"
 dirs = "4.0"
 
+# macOS-specific dependencies for native window manipulation
+[target.'cfg(target_os = "macos")'.dependencies]
+cocoa = "0.25"
+objc = "0.2"
+
 # [features]
 # custom-protocol = ["tauri/custom-protocol"]

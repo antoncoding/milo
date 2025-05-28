@@ -5,6 +5,7 @@ mod state;
 mod tray;
 mod api;
 mod shortcuts;
+mod system;
 
 use settings::Settings;
 use state::AppState;
