@@ -33,7 +33,6 @@
         "fullscreen": false,
         "decorations": true,
         "visible": false,
-        "alwaysOnTop": true,
         "skipTaskbar": true,
         "useHttpsScheme": true
       }
