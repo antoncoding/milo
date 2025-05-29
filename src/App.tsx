@@ -6,8 +6,7 @@ import { ApiSettings } from "./components/ApiSettings";
 import { PromptSettings } from "./components/PromptSettings";
 import { Sidebar } from "./components/Sidebar";
 import { InfoPage } from "./components/InfoPage";
-import "./styles/SharedStyles.css";
-
+  
 interface Settings {
   openai_model: string;
   custom_prompts: {

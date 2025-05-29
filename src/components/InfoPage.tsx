@@ -1,10 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
-import miloLogo from "../assets/icon.png";
 import "../styles/InfoPage.css";
 import { ShortcutItem } from "./ShortcutItem";
 import { useShortcutEditor } from "../hooks/useShortcutEditor";
 import { backendFormatToShortcut, shortcutToBackendFormat, Shortcut } from "../utils/keyboardUtils";
+import miloLogo from "../assets/icon.png";
 
 interface InfoPageProps {
   onComplete?: () => void;
@@ -126,7 +126,7 @@ export function InfoPage({ onComplete }: InfoPageProps) {
   return (
     <div className="info-page">
       <img src={miloLogo} className="logo" alt="Milo logo" />
-      <h1>Welcome to Milo</h1>
+      <p className="text-2xl text-red">Welcome to Milo</p>
       
       <div className="info-content">
         <p>

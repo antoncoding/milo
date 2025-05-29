@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import "./styles.css";
+import "./main.css";
 
 // Get the window label
 const windowLabel = document.querySelector('meta[name="tauri-window"]')?.getAttribute("content");
