@@ -5,11 +5,8 @@ import { useShortcutEditor } from "../hooks/useShortcutEditor";
 import { backendFormatToShortcut, shortcutToBackendFormat, Shortcut } from "../utils/keyboardUtils";
 import miloLogo from "../assets/icon.png";
 
-interface InfoPageProps {
-  onComplete?: () => void;
-}
 
-export function InfoPage({ onComplete }: InfoPageProps) {
+export function InfoPage() {
   const [shortcut, setShortcut] = useState<Shortcut>([]);
   const [shortcutEnabled, setShortcutEnabled] = useState(true);
 

@@ -97,13 +97,6 @@ function App() {
     };
   }, []);
 
-  const handleFirstVisitComplete = async () => {
-    const updatedSettings = { ...settings, firstVisitComplete: true };
-    await invoke("save_settings", { settings: updatedSettings });
-    setSettings(updatedSettings);
-    setActiveSection('prompts');
-  };
-
   const renderContent = () => {
     if (loading) {
       return <div className="flex items-center justify-center min-h-screen text-slate-600">Loading...</div>;
@@ -111,7 +104,7 @@ function App() {
 
     switch (activeSection) {
       case 'info':
-        return <InfoPage onComplete={!settings.firstVisitComplete ? handleFirstVisitComplete : undefined} />;
+        return <InfoPage />;
       case 'prompts':
         return <PromptSettings settings={settings} setSettings={setSettings} />;
       case 'api':
