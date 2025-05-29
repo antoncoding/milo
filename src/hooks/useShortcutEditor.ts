@@ -32,7 +32,6 @@ export interface ShortcutEditorState {
 }
 
 export function useShortcutEditor(
-  initialShortcut: Shortcut,
   initialEnabled: boolean = true,
   onChange: (shortcut: Shortcut) => void,
   onEnabledChange: (enabled: boolean) => void

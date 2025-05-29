@@ -106,7 +106,7 @@ function App() {
 
   const renderContent = () => {
     if (loading) {
-      return <div className="loading">Loading...</div>;
+      return <div className="flex items-center justify-center min-h-screen text-slate-600">Loading...</div>;
     }
 
     switch (activeSection) {
@@ -127,8 +127,8 @@ function App() {
         activeSection={activeSection} 
         onSectionChange={setActiveSection}
       />
-      <div className="main-content">
-        <div className="container">
+      <div className="ml-14 min-h-screen">
+        <div className="mx-auto px-8 py-8 max-w-3xl">
           {renderContent()}
         </div>
       </div>

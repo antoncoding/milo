@@ -37,15 +37,28 @@ fn handle_menu_event(app: &AppHandle, event: tauri::menu::MenuEvent) {
         "settings" => {
             println!("Settings menu item clicked");
             if let Some(window) = app.get_webview_window("main") {
+                // Show window first
                 let _ = window.show();
-                let _ = window.set_focus();
                 
                 #[cfg(target_os = "macos")]
                 {
                     use tauri::UserAttentionType;
-                    let _ = window.request_user_attention(Some(UserAttentionType::Informational));
                     let _ = system::move_window_to_active_space(&window);
+                    
+                    // Request user attention to draw focus
+                    let _ = window.request_user_attention(Some(UserAttentionType::Critical));
                 }
+                
+                // Multiple focus attempts with increasing delays for desktop switching
+                std::thread::sleep(std::time::Duration::from_millis(200));
+                let _ = window.set_focus();
+                
+                std::thread::sleep(std::time::Duration::from_millis(100));
+                let _ = window.set_focus();
+                
+                // Final attempt with even longer delay
+                std::thread::sleep(std::time::Duration::from_millis(100));
+                let _ = window.set_focus();
             }
         }
         "transform" => {

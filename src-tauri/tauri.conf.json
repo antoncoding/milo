@@ -33,8 +33,10 @@
         "fullscreen": false,
         "decorations": true,
         "visible": false,
-        "skipTaskbar": true,
-        "useHttpsScheme": true
+        "skipTaskbar": false,
+        "useHttpsScheme": true,
+        "alwaysOnTop": false,
+        "center": true
       }
     ],
     "withGlobalTauri": false,

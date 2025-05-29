@@ -12,6 +12,9 @@
 		"core:window:allow-set-theme",
 		"core:window:deny-internal-toggle-maximize",
 		"core:window:allow-set-size",
+		"core:window:allow-set-focus",
+		"core:window:allow-show",
+		"core:window:allow-hide",
 		"shell:default",
 		{
 			"identifier": "shell:allow-execute",

@@ -11,10 +11,17 @@ pub fn move_window_to_active_space(webview_window: &tauri::WebviewWindow) -> Res
         
     let ns_window = ns_window_ptr as *mut Object;
     unsafe {
-        ns_window.makeKeyAndOrderFront_(nil);
+        // Set collection behavior for proper desktop switching
         ns_window.setCollectionBehavior_(
             NSWindowCollectionBehavior::NSWindowCollectionBehaviorMoveToActiveSpace,
         );
+        
+        // Multiple attempts to ensure focus is maintained
+        ns_window.makeKeyAndOrderFront_(nil);
+        
+        // Small delay and try again to ensure focus sticks
+        std::thread::sleep(std::time::Duration::from_millis(10));
+        ns_window.makeKeyAndOrderFront_(nil);
     }
     Ok(())
 }

@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
-import "../styles/InfoPage.css";
 import { ShortcutItem } from "./ShortcutItem";
 import { useShortcutEditor } from "../hooks/useShortcutEditor";
 import { backendFormatToShortcut, shortcutToBackendFormat, Shortcut } from "../utils/keyboardUtils";
@@ -56,10 +55,6 @@ export function InfoPage({ onComplete }: InfoPageProps) {
       });
       
       setShortcutEnabled(enabled);
-      
-      if (onComplete) {
-        onComplete();
-      }
     } catch (error) {
       console.error("Failed to save settings:", error);
     }
@@ -86,7 +81,7 @@ export function InfoPage({ onComplete }: InfoPageProps) {
     openEditModal,
     closeEditModal,
     saveShortcut
-  } = useShortcutEditor(shortcut, shortcutEnabled, changeShortcut, setShortcutEnabled);
+  } = useShortcutEditor(shortcutEnabled, changeShortcut, setShortcutEnabled);
 
   const onEditShortcut = async () => {
     console.log("🔄 Frontend: Starting shortcut edit");
@@ -124,18 +119,18 @@ export function InfoPage({ onComplete }: InfoPageProps) {
   };
 
   return (
-    <div className="info-page">
-      <img src={miloLogo} className="logo" alt="Milo logo" />
-      <p className="text-2xl text-red">Welcome to Milo</p>
+    <div className="max-w-3xl mx-auto p-8 text-center flex flex-col items-center justify-center min-h-[80vh]">
+      <img src={miloLogo} className="w-24 mb-4" alt="Milo logo" />
+      <p className="text-2xl">Welcome to Milo</p>
       
-      <div className="info-content">
-        <p>
-          Milo helps you improve your writing by transforming text in your <span style={{ fontWeight: "bold" }}>clipboard</span>. 
+      <div className="mt-8 text-center max-w-md">
+        <p className="text-slate-600 leading-relaxed mb-8 text-sm">
+          Milo helps you improve your writing by transforming text in your <span className="font-bold">clipboard</span>. 
           Simply copy any text and use the shortcut to transform it!
         </p>
 
         {shortcut.length > 0 && (
-          <div className="shortcut-settings">
+          <div className="mx-auto w-full max-w-80 p-4 bg-white/80 border border-gray-200 rounded-lg shadow-sm my-6">
             <ShortcutItem
               shortcut={shortcut}
               isEnabled={isEnabled}

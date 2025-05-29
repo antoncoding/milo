@@ -29,7 +29,27 @@ pub async fn get_settings(state: tauri::State<'_, AppState>) -> Result<Settings,
 pub async fn show_settings(window: tauri::Window) -> Result<(), String> {
     let app = window.app_handle();
     if let Some(settings_window) = app.get_webview_window("main") {
+        // Show window first
         settings_window.show().map_err(|e| e.to_string())?;
+        
+        #[cfg(target_os = "macos")]
+        {
+            use tauri::UserAttentionType;
+            let _ = crate::system::move_window_to_active_space(&settings_window);
+            
+            // Request user attention to draw focus
+            let _ = settings_window.request_user_attention(Some(UserAttentionType::Critical));
+        }
+        
+        // Multiple focus attempts with increasing delays for desktop switching
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        settings_window.set_focus().map_err(|e| e.to_string())?;
+        
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        settings_window.set_focus().map_err(|e| e.to_string())?;
+        
+        // Final attempt with even longer delay
+        std::thread::sleep(std::time::Duration::from_millis(100));
         settings_window.set_focus().map_err(|e| e.to_string())?;
     }
     Ok(())

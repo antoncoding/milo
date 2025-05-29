@@ -76,6 +76,19 @@ pub fn run() {
                 window.hide().unwrap();
                 api.prevent_close();
             }
+            tauri::WindowEvent::Focused(is_focused) => {
+                if *is_focused {
+                    println!("Window focused - ensuring proper z-order and app activation");
+                    #[cfg(target_os = "macos")]
+                    if let Some(window) = _app.get_webview_window("main") {
+                        let _ = crate::system::move_window_to_active_space(&window);
+                        
+                        // Small delay then re-focus to ensure it sticks
+                        std::thread::sleep(std::time::Duration::from_millis(50));
+                        let _ = window.set_focus();
+                    }
+                }
+            }
             _ => {}
         })
         .run(tauri::generate_context!())
