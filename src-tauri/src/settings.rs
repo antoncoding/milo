@@ -10,6 +10,7 @@ pub struct Settings {
     pub selected_tone: Option<String>,
     pub first_visit_complete: Option<bool>,
     pub shortcut_enabled: Option<bool>,
+    pub shortcut_keys: Option<String>,
 }
 
 impl Default for Settings {
@@ -25,6 +26,7 @@ impl Default for Settings {
             selected_tone: Some("Improve Writing".to_string()),
             first_visit_complete: Some(false),
             shortcut_enabled: Some(true),
+            shortcut_keys: Some("meta+KeyM".to_string()),
         }
     }
 }
@@ -44,6 +46,10 @@ impl Settings {
 
     pub fn is_shortcut_enabled(&self) -> bool {
         self.shortcut_enabled.unwrap_or(true)
+    }
+
+    pub fn get_shortcut_keys(&self) -> String {
+        self.shortcut_keys.clone().unwrap_or_else(|| "meta+KeyM".to_string())
     }
 }
 

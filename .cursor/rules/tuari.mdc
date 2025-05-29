@@ -4,5 +4,7 @@ globs:
 alwaysApply: false
 ---
 ## Important
-Please use tauri v2 documents, APIs, plugins. If you don't know how a specific feature is achievable in Tauri v2, ask the user for more documentation.
+* Please use tauri v2 documents, APIs, plugins. If you don't know how a specific feature is achievable in Tauri v2, ask the user for more documentation.
+* Do not try to run command. You can assume user is running the dev server on it own. Also this is a pnpm repo, suggest commands like `pnpm run tauri dev` instead of npm
+* Do not run commands to check types
 
