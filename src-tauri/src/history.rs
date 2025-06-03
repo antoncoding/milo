@@ -337,6 +337,33 @@ pub fn clear_transformation_history() -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn delete_transformation_entry(index: usize) -> Result<(), String> {
+    let mut history = TransformationHistory::load();
+    
+    if index >= history.entries.len() {
+        return Err("Entry index out of bounds".to_string());
+    }
+    
+    // Remove the entry
+    let removed_entry = history.entries.remove(index);
+    
+    // Update daily stats
+    let date_key = removed_entry.timestamp.format("%Y-%m-%d").to_string();
+    if let Some(day_stats) = history.daily_stats.get_mut(&date_key) {
+        day_stats.transformation_count = day_stats.transformation_count.saturating_sub(1);
+        day_stats.word_count = day_stats.word_count.saturating_sub(removed_entry.word_count);
+        day_stats.sentence_count = day_stats.sentence_count.saturating_sub(removed_entry.sentence_count);
+        
+        // Remove the day stats if no transformations left for that day
+        if day_stats.transformation_count == 0 {
+            history.daily_stats.remove(&date_key);
+        }
+    }
+    
+    history.save()
+}
+
+#[tauri::command]
 pub fn get_usage_stats() -> Result<serde_json::Value, String> {
     let history = TransformationHistory::load();
     
@@ -376,18 +403,6 @@ pub fn get_daily_stats(days: Option<usize>) -> Result<Vec<DayStats>, String> {
     // Reverse to get chronological order (oldest first)
     stats.reverse();
     Ok(stats)
-}
-
-#[tauri::command]
-pub fn get_transformation_diff(entry_index: usize) -> Result<TextDiff, String> {
-    let history = TransformationHistory::load();
-    
-    if entry_index >= history.entries.len() {
-        return Err("Entry index out of bounds".to_string());
-    }
-    
-    let entry = &history.entries[entry_index];
-    Ok(compute_word_diff(&entry.original_text, &entry.transformed_text))
 }
 
 #[cfg(test)]

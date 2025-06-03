@@ -21,6 +21,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new()
             .with_handler(|app, shortcut, event| {
                 println!("🎯 Shortcut handler triggered!");
@@ -75,9 +76,9 @@ pub fn run() {
             history::add_transformation_to_history,
             history::get_transformation_history,
             history::clear_transformation_history,
+            history::delete_transformation_entry,
             history::get_usage_stats,
             history::get_daily_stats,
-            history::get_transformation_diff,
         ])
         .on_window_event(|_app, event| match event {
             tauri::WindowEvent::CloseRequested { api, .. } => {
