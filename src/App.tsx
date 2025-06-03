@@ -92,10 +92,18 @@ function App() {
       });
     });
 
+    // Listen for navigation events from tray
+    const unlistenNavigate = listen('navigate-to-section', (event) => {
+      const section = event.payload as string;
+      console.log('Navigation event received:', section);
+      setActiveSection(section);
+    });
+
     return () => {
       unlisten.then((fn) => fn());
       unlistenNotification.then(fn => fn());
       unlistenTransform.then(fn => fn());
+      unlistenNavigate.then(fn => fn());
     };
   }, []);
 

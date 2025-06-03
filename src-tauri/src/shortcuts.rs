@@ -167,7 +167,6 @@ pub async fn get_current_shortcut(state: tauri::State<'_, AppState>) -> Result<S
     println!("🔍 Getting current shortcut from settings...");
     let settings = state.settings.lock().await;
     let shortcut_str = settings.get_shortcut_keys();
-    println!("📤 Returning shortcut: '{}'", shortcut_str);
     Ok(shortcut_str)
 }
 

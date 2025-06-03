@@ -20,13 +20,13 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         </button>
         <button
           className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-slate-100 hover:text-blue-500 hover:scale-105 ${
-            activeSection === 'info' ? 'text-blue-500' : 'text-slate-500'
+            activeSection === 'history' ? 'text-blue-500' : 'text-slate-500'
           }`}
-          onClick={() => onSectionChange('info')}
-          title="About Milo"
+          onClick={() => onSectionChange('history')}
+          title="Transformation History"
         >
           <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </button>
         <button
@@ -37,7 +37,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
           title="Prompt Settings"
         >
           <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
           </svg>
         </button>
         <button
@@ -54,13 +54,13 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         </button>
         <button
           className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-slate-100 hover:text-blue-500 hover:scale-105 ${
-            activeSection === 'history' ? 'text-blue-500' : 'text-slate-500'
+            activeSection === 'info' ? 'text-blue-500' : 'text-slate-500'
           }`}
-          onClick={() => onSectionChange('history')}
-          title="Transformation History"
+          onClick={() => onSectionChange('info')}
+          title="About Milo"
         >
           <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
           </svg>
         </button>
       </div>

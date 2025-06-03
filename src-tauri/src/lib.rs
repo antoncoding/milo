@@ -59,6 +59,9 @@ pub fn run() {
             #[cfg(desktop)]
             shortcuts::register_shortcuts(&app.handle())?;
 
+            #[cfg(target_os = "macos")]#[cfg(target_os = "macos")]
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            
             Ok(())
         })
         .manage(app_state)

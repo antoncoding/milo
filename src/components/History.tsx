@@ -372,13 +372,6 @@ export function History() {
                       </div>
                     </div>
                   )}
-                  
-                  <button
-                    onClick={() => toggleDiffView(index)}
-                    className="text-xs text-blue-600 hover:text-blue-800"
-                  >
-                    {expandedEntry === index ? 'Hide Diff' : 'Show Diff'}
-                  </button>
                 </div>
               </div>
             ))}
