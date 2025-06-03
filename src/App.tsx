@@ -6,6 +6,8 @@ import { ApiSettings } from "./components/ApiSettings";
 import { PromptSettings } from "./components/PromptSettings";
 import { Sidebar } from "./components/Sidebar";
 import { InfoPage } from "./components/InfoPage";
+import { History } from "./components/History";
+import { Dashboard } from "./components/Dashboard";
   
 interface Settings {
   openai_model: string;
@@ -57,7 +59,7 @@ function App() {
         if (!savedSettings.firstVisitComplete) {
           setActiveSection('info');
         } else {
-          setActiveSection('prompts');
+          setActiveSection('dashboard');
         }
         setLoading(false);
       })
@@ -109,6 +111,10 @@ function App() {
         return <PromptSettings settings={settings} setSettings={setSettings} />;
       case 'api':
         return <ApiSettings />;
+      case 'history':
+        return <History />;
+      case 'dashboard':
+        return <Dashboard />;
       default:
         return <PromptSettings settings={settings} setSettings={setSettings} />;
     }

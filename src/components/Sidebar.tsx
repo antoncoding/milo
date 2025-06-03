@@ -9,6 +9,17 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
       <div className="py-4 flex flex-col gap-2">
         <button
           className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-slate-100 hover:text-blue-500 hover:scale-105 ${
+            activeSection === 'dashboard' ? 'text-blue-500' : 'text-slate-500'
+          }`}
+          onClick={() => onSectionChange('dashboard')}
+          title="Dashboard"
+        >
+          <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+          </svg>
+        </button>
+        <button
+          className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-slate-100 hover:text-blue-500 hover:scale-105 ${
             activeSection === 'info' ? 'text-blue-500' : 'text-slate-500'
           }`}
           onClick={() => onSectionChange('info')}
@@ -38,6 +49,17 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         >
           <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1721.75 8.25z" />
+          </svg>
+        </button>
+        <button
+          className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-slate-100 hover:text-blue-500 hover:scale-105 ${
+            activeSection === 'history' ? 'text-blue-500' : 'text-slate-500'
+          }`}
+          onClick={() => onSectionChange('history')}
+          title="Transformation History"
+        >
+          <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </button>
       </div>
