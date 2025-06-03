@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
-import { ApiSettings } from "./components/ApiSettings";
+import { Settings } from "./components/ApiSettings";
 import { PromptSettings } from "./components/PromptSettings";
 import { Sidebar } from "./components/Sidebar";
 import { InfoPage } from "./components/InfoPage";
@@ -110,7 +110,7 @@ function App() {
       case 'prompts':
         return <PromptSettings settings={settings} setSettings={setSettings} />;
       case 'api':
-        return <ApiSettings />;
+        return <Settings />;
       case 'history':
         return <History />;
       case 'dashboard':

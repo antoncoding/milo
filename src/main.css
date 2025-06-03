@@ -11,5 +11,18 @@
     background-color: #F5F5F7;
     color: #1C1C1E;
     -webkit-font-smoothing: antialiased;
+    font-weight: 400;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 400;
+  }
+  
+  button {
+    font-weight: 400;
+  }
+  
+  label {
+    font-weight: 400;
   }
 } 

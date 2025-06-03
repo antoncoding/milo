@@ -85,7 +85,7 @@ export function PromptSettings({ settings, setSettings }: PromptSettingsProps) {
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
           </svg>
-          <h2 className="text-xl font-semibold text-slate-800">
+          <h2 className="text-xl text-slate-800">
             {isFormOpen 
               ? (editingTone ? `Edit ${editingTone.name}` : 'Add New Tone')
               : 'Custom Prompts'
@@ -128,7 +128,7 @@ export function PromptSettings({ settings, setSettings }: PromptSettingsProps) {
               onClick={() => handleSelectTone("Improve Writing")}
             >
               <div className="flex justify-between items-center mb-2">
-                <span className={`font-semibold text-base ${
+                <span className={`text-base ${
                   settings.selected_tone === "Improve Writing" ? 'text-blue-700' : 'text-slate-800'
                 }`}>Improve Writing</span>
                 <div className="flex gap-2 items-center">
@@ -159,7 +159,7 @@ export function PromptSettings({ settings, setSettings }: PromptSettingsProps) {
                 onClick={() => handleSelectTone(name)}
               >
                 <div className="flex justify-between items-center mb-2">
-                  <span className={`font-semibold text-base ${
+                  <span className={`text-base ${
                     settings.selected_tone === name ? 'text-blue-700' : 'text-slate-800'
                   }`}>{name}</span>
                   <div className="flex gap-2 items-center">
@@ -202,7 +202,7 @@ export function PromptSettings({ settings, setSettings }: PromptSettingsProps) {
       
       {!isFormOpen && (
         <button 
-          className="flex items-center justify-center gap-2 w-full p-3 border-2 border-dashed border-slate-200 rounded-lg bg-transparent text-slate-600 font-medium cursor-pointer transition-all duration-200 hover:border-slate-300 hover:text-slate-700"
+          className="flex items-center justify-center gap-2 w-full p-3 border-2 border-dashed border-slate-200 rounded-lg bg-transparent text-slate-600 cursor-pointer transition-all duration-200 hover:border-slate-300 hover:text-slate-700"
           onClick={() => setIsFormOpen(true)}
         >
           <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">

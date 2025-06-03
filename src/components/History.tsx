@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { ask, message } from '@tauri-apps/plugin-dialog';
-import { DiffViewer } from './DiffViewer';
+import moment from 'moment';
 
 interface TransformationEntry {
   tone_name: string;
@@ -14,10 +14,123 @@ interface TransformationEntry {
   removed_count: number;
 }
 
+interface WordDiff {
+  word: string;
+  change_type: 'added' | 'removed' | 'unchanged';
+  position: number;
+}
+
+interface TextDiff {
+  original_diff: WordDiff[];
+  transformed_diff: WordDiff[];
+  added_count: number;
+  removed_count: number;
+}
+
+// Frontend word diff calculation
+function tokenizeText(text: string): string[] {
+  return text.split(/\s+/).filter(word => word.length > 0);
+}
+
+function computeLCS(a: string[], b: string[]): string[] {
+  const m = a.length;
+  const n = b.length;
+  
+  const dp: number[][] = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+  
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+  
+  const lcs: string[] = [];
+  let i = m;
+  let j = n;
+  
+  while (i > 0 && j > 0) {
+    if (a[i - 1] === b[j - 1]) {
+      lcs.unshift(a[i - 1]);
+      i--;
+      j--;
+    } else if (dp[i - 1][j] > dp[i][j - 1]) {
+      i--;
+    } else {
+      j--;
+    }
+  }
+  
+  return lcs;
+}
+
+function computeWordDiff(originalText: string, transformedText: string): TextDiff {
+  const originalWords = tokenizeText(originalText);
+  const transformedWords = tokenizeText(transformedText);
+  
+  const lcs = computeLCS(originalWords, transformedWords);
+  
+  const originalDiff: WordDiff[] = [];
+  let lcsIndex = 0;
+  
+  for (let pos = 0; pos < originalWords.length; pos++) {
+    const word = originalWords[pos];
+    if (lcsIndex < lcs.length && word === lcs[lcsIndex]) {
+      originalDiff.push({
+        word,
+        change_type: 'unchanged',
+        position: pos,
+      });
+      lcsIndex++;
+    } else {
+      originalDiff.push({
+        word,
+        change_type: 'removed',
+        position: pos,
+      });
+    }
+  }
+  
+  const transformedDiff: WordDiff[] = [];
+  lcsIndex = 0;
+  
+  for (let pos = 0; pos < transformedWords.length; pos++) {
+    const word = transformedWords[pos];
+    if (lcsIndex < lcs.length && word === lcs[lcsIndex]) {
+      transformedDiff.push({
+        word,
+        change_type: 'unchanged',
+        position: pos,
+      });
+      lcsIndex++;
+    } else {
+      transformedDiff.push({
+        word,
+        change_type: 'added',
+        position: pos,
+      });
+    }
+  }
+  
+  const addedCount = transformedDiff.filter(d => d.change_type === 'added').length;
+  const removedCount = originalDiff.filter(d => d.change_type === 'removed').length;
+  
+  return {
+    original_diff: originalDiff,
+    transformed_diff: transformedDiff,
+    added_count: addedCount,
+    removed_count: removedCount,
+  };
+}
+
 export function History() {
   const [entries, setEntries] = useState<TransformationEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [diffViewerEntry, setDiffViewerEntry] = useState<number | null>(null);
+  const [expandedEntry, setExpandedEntry] = useState<number | null>(null);
+  const [diffData, setDiffData] = useState<{[key: number]: TextDiff}>({});
 
   useEffect(() => {
     loadHistoryData();
@@ -45,7 +158,7 @@ export function History() {
     if (userConfirmed) {
       try {
         await invoke('delete_transformation_entry', { index });
-        await loadHistoryData(); // Refresh the data
+        await loadHistoryData();
         await message('Entry deleted successfully!', { title: 'Success', kind: 'info' });
       } catch (error) {
         console.error('Failed to delete entry:', error);
@@ -71,7 +184,6 @@ export function History() {
         await loadHistoryData();
         console.log('Data reloaded successfully');
         
-        // Show success feedback
         await message('History cleared successfully!', { title: 'Success', kind: 'info' });
       } catch (error) {
         console.error('Failed to clear history:', error);
@@ -83,13 +195,47 @@ export function History() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const toggleDiffView = (index: number) => {
+    if (expandedEntry === index) {
+      setExpandedEntry(null);
+    } else {
+      setExpandedEntry(index);
+      // Calculate diff if not already cached
+      if (!diffData[index]) {
+        const entry = entries[index];
+        const diff = computeWordDiff(entry.original_text, entry.transformed_text);
+        setDiffData(prev => ({ ...prev, [index]: diff }));
+      }
+    }
+  };
+
+  const renderDiffText = (words: WordDiff[], isTransformed: boolean) => {
+    return (
+      <div className="font-mono text-sm leading-relaxed">
+        {words.map((wordDiff, index) => {
+          let className = '';
+          
+          if (wordDiff.change_type === 'removed' && !isTransformed) {
+            className = 'bg-red-100 text-red-800 px-1 rounded';
+          } else if (wordDiff.change_type === 'added' && isTransformed) {
+            className = 'bg-green-100 text-green-800 px-1 rounded';
+          } else if (wordDiff.change_type === 'unchanged') {
+            className = 'text-slate-700';
+          }
+          
+          return (
+            <span key={index} className={className}>
+              {wordDiff.word}
+              {index < words.length - 1 ? ' ' : ''}
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    return moment(dateString).fromNow();
   };
 
   if (loading) {
@@ -112,13 +258,11 @@ export function History() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Transformation History</h1>
+          <h1 className="text-2xl text-slate-800">Transformation History</h1>
           <p className="text-slate-600 mt-1">View your past text transformations</p>
         </div>
         <button
-          onClick={() => {
-            clearHistory();
-          }}
+          onClick={clearHistory}
           className="px-4 py-2 text-sm text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
         >
           Clear History
@@ -128,20 +272,16 @@ export function History() {
       {/* Recent Transformations */}
       <div className="bg-white rounded-lg border border-slate-200">
         <div className="p-6 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-800">Recent Transformations</h2>
+          <h2 className="text-lg text-slate-800">Recent Transformations</h2>
         </div>
         
         {entries.length > 0 ? (
           <div className="divide-y divide-slate-200">
             {entries.map((entry, index) => (
-              <div 
-                key={index} 
-                className="p-4 hover:bg-slate-50 cursor-pointer transition-colors"
-                onClick={() => setDiffViewerEntry(index)}
-              >
-                <div className="flex justify-between items-start mb-2">
+              <div key={index} className="p-4">
+                <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                    <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
                       {entry.tone_name}
                     </span>
                     {(entry.added_count > 0 || entry.removed_count > 0) && (
@@ -157,7 +297,7 @@ export function History() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-500">
-                      {formatDate(entry.timestamp)}
+                      {formatTimeAgo(entry.timestamp)}
                     </span>
                     <button
                       onClick={(e) => {
@@ -174,11 +314,71 @@ export function History() {
                   </div>
                 </div>
                 
-                <div className="text-sm text-slate-600 truncate">
-                  <span className="font-medium">Original:</span> {entry.original_text}
-                </div>
-                <div className="text-sm text-slate-800 truncate mt-1">
-                  <span className="font-medium">Transformed:</span> {entry.transformed_text}
+                <div className="space-y-3">
+                  <div 
+                    className="text-sm text-slate-600 cursor-pointer hover:bg-slate-50 p-2 rounded transition-colors"
+                    onClick={() => toggleDiffView(index)}
+                  >
+                    {entry.original_text}
+                    <span className="ml-2 text-xs bg-slate-200 text-slate-700 px-2 py-1 rounded">before</span>
+                  </div>
+                  
+                  <div 
+                    className="text-sm text-slate-800 cursor-pointer hover:bg-slate-50 p-2 rounded transition-colors"
+                    onClick={() => toggleDiffView(index)}
+                  >
+                    {entry.transformed_text}
+                    <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded">after</span>
+                  </div>
+                  
+                  {expandedEntry === index && diffData[index] && (
+                    <div className="mt-4 space-y-4 border-t pt-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-sm text-slate-700">Original</span>
+                          <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                            -{diffData[index].removed_count} words
+                          </span>
+                        </div>
+                        <div className="border border-slate-200 rounded-lg p-3 bg-slate-50">
+                          {renderDiffText(diffData[index].original_diff, false)}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-sm text-slate-700">Transformed</span>
+                          <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                            +{diffData[index].added_count} words
+                          </span>
+                        </div>
+                        <div className="border border-slate-200 rounded-lg p-3 bg-slate-50">
+                          {renderDiffText(diffData[index].transformed_diff, true)}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-200">
+                        <p className="text-xs text-slate-500 mb-2">Legend:</p>
+                        <div className="flex gap-4 text-xs">
+                          <div className="flex items-center gap-1">
+                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded">removed</span>
+                            <span className="text-slate-600">deleted words</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">added</span>
+                            <span className="text-slate-600">added words</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={() => toggleDiffView(index)}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    {expandedEntry === index ? 'Hide Diff' : 'Show Diff'}
+                  </button>
                 </div>
               </div>
             ))}
@@ -197,16 +397,6 @@ export function History() {
           </div>
         )}
       </div>
-      
-      {/* Diff Viewer Modal */}
-      {diffViewerEntry !== null && entries[diffViewerEntry] && (
-        <DiffViewer
-          entryIndex={diffViewerEntry}
-          originalText={entries[diffViewerEntry].original_text}
-          transformedText={entries[diffViewerEntry].transformed_text}
-          onClose={() => setDiffViewerEntry(null)}
-        />
-      )}
     </div>
   );
 } 

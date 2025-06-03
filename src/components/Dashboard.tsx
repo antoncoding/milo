@@ -66,7 +66,7 @@ export function Dashboard() {
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
+        <h1 className="text-2xl text-slate-800">Dashboard</h1>
         <p className="text-slate-600 mt-1">Overview of your transformation activity</p>
       </div>
 
@@ -78,7 +78,7 @@ export function Dashboard() {
             title="Total number of text transformations performed"
           >
             <div className="flex flex-col h-full">
-              <div className="text-3xl font-bold text-blue-600 mb-1">{usageStats.total_transformations}</div>
+              <div className="text-3xl text-blue-600 mb-1">{usageStats.total_transformations}</div>
               <div className="text-sm text-slate-500 mt-auto text-right">Transformations</div>
             </div>
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -93,7 +93,7 @@ export function Dashboard() {
             title="Total number of words that were changed during transformations"
           >
             <div className="flex flex-col h-full">
-              <div className="text-3xl font-bold text-green-600 mb-1">{usageStats.total_words_transformed}</div>
+              <div className="text-3xl text-green-600 mb-1">{usageStats.total_words_transformed}</div>
               <div className="text-sm text-slate-500 mt-auto text-right">Words</div>
             </div>
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -108,7 +108,7 @@ export function Dashboard() {
             title="Total number of sentences that were transformed"
           >
             <div className="flex flex-col h-full">
-              <div className="text-3xl font-bold text-purple-600 mb-1">{usageStats.total_sentences_transformed}</div>
+              <div className="text-3xl text-purple-600 mb-1">{usageStats.total_sentences_transformed}</div>
               <div className="text-sm text-slate-500 mt-auto text-right">Sentences</div>
             </div>
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -123,7 +123,7 @@ export function Dashboard() {
       {/* Daily Activity Chart */}
       <div className="bg-white p-6 rounded-lg border border-slate-200">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-slate-800">Daily Activity</h2>
+          <h2 className="text-lg text-slate-800">Daily Activity</h2>
           <div className="flex gap-2">
             <button
               onClick={() => setSelectedPeriod(7)}
