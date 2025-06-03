@@ -6,6 +6,8 @@ mod tray;
 mod api;
 mod shortcuts;
 mod system;
+mod history;
+mod core;
 
 use settings::Settings;
 use state::AppState;
@@ -30,7 +32,7 @@ pub fn run() {
                         println!("⬇️  Shortcut PRESSED - triggering transform");
                         let app_handle = app.clone();
                         tauri::async_runtime::spawn(async move {
-                            if let Err(e) = transform::transform_clip_with_setting(app_handle.clone(), true).await {
+                            if let Err(e) = core::transform_clip_with_setting(app_handle.clone(), true).await {
                                 println!("❌ Transform error: {}", e);
                                 let _ = app_handle.notification()
                                     .builder()
@@ -65,10 +67,17 @@ pub fn run() {
             api::save_settings,
             api::get_settings,
             api::show_settings,
-            transform::transform_clipboard,
+            core::transform_clipboard,
+            core::transform_clip_with_setting,
             shortcuts::get_current_shortcut,
             shortcuts::update_shortcut,
             shortcuts::unregister_shortcut,
+            history::add_transformation_to_history,
+            history::get_transformation_history,
+            history::clear_transformation_history,
+            history::get_usage_stats,
+            history::get_daily_stats,
+            history::get_transformation_diff,
         ])
         .on_window_event(|_app, event| match event {
             tauri::WindowEvent::CloseRequested { api, .. } => {
