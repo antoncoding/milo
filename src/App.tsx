@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
-import { ApiSettings } from "./components/ApiSettings";
+import { Settings } from "./components/ApiSettings";
 import { PromptSettings } from "./components/PromptSettings";
 import { Sidebar } from "./components/Sidebar";
 import { InfoPage } from "./components/InfoPage";
+import { History } from "./components/History";
+import { Dashboard } from "./components/Dashboard";
   
 interface Settings {
   openai_model: string;
@@ -57,7 +59,7 @@ function App() {
         if (!savedSettings.firstVisitComplete) {
           setActiveSection('info');
         } else {
-          setActiveSection('prompts');
+          setActiveSection('dashboard');
         }
         setLoading(false);
       })
@@ -90,10 +92,18 @@ function App() {
       });
     });
 
+    // Listen for navigation events from tray
+    const unlistenNavigate = listen('navigate-to-section', (event) => {
+      const section = event.payload as string;
+      console.log('Navigation event received:', section);
+      setActiveSection(section);
+    });
+
     return () => {
       unlisten.then((fn) => fn());
       unlistenNotification.then(fn => fn());
       unlistenTransform.then(fn => fn());
+      unlistenNavigate.then(fn => fn());
     };
   }, []);
 
@@ -108,7 +118,11 @@ function App() {
       case 'prompts':
         return <PromptSettings settings={settings} setSettings={setSettings} />;
       case 'api':
-        return <ApiSettings />;
+        return <Settings />;
+      case 'history':
+        return <History />;
+      case 'dashboard':
+        return <Dashboard />;
       default:
         return <PromptSettings settings={settings} setSettings={setSettings} />;
     }
