@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface DayStats {
   date: string;
@@ -43,10 +44,6 @@ export function Dashboard() {
     }
   };
 
-  const getMaxCount = () => {
-    return Math.max(...dailyStats.map(d => d.transformation_count), 1);
-  };
-
   if (loading) {
     return (
       <div className="p-6 space-y-6">
@@ -73,49 +70,19 @@ export function Dashboard() {
       {/* Usage Stats */}
       {usageStats && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div 
-            className="bg-white p-6 rounded-lg border border-slate-200 relative group cursor-pointer transition-all hover:shadow-md"
-            title="Total number of text transformations performed"
-          >
-            <div className="flex flex-col h-full">
-              <div className="text-3xl text-blue-600 mb-1">{usageStats.total_transformations}</div>
-              <div className="text-sm text-slate-500 mt-auto text-right">Transformations</div>
-            </div>
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                Total transformations performed
-              </div>
-            </div>
+          <div className="bg-white p-6 rounded-lg border border-slate-200 relative flex flex-col h-32">
+            <div className="text-3xl text-blue-600 mb-1">{usageStats.total_transformations}</div>
+            <div className="text-sm text-slate-500 mt-auto mb-2">Transformations</div>
           </div>
           
-          <div 
-            className="bg-white p-6 rounded-lg border border-slate-200 relative group cursor-pointer transition-all hover:shadow-md"
-            title="Total number of words that were changed during transformations"
-          >
-            <div className="flex flex-col h-full">
-              <div className="text-3xl text-green-600 mb-1">{usageStats.total_words_transformed}</div>
-              <div className="text-sm text-slate-500 mt-auto text-right">Words</div>
-            </div>
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                Total words changed (added + removed)
-              </div>
-            </div>
+          <div className="bg-white p-6 rounded-lg border border-slate-200 relative flex flex-col h-32">
+            <div className="text-3xl text-green-600 mb-1">{usageStats.total_words_transformed}</div>
+            <div className="text-sm text-slate-500 mt-auto mb-2">Words</div>
           </div>
           
-          <div 
-            className="bg-white p-6 rounded-lg border border-slate-200 relative group cursor-pointer transition-all hover:shadow-md"
-            title="Total number of sentences that were transformed"
-          >
-            <div className="flex flex-col h-full">
-              <div className="text-3xl text-purple-600 mb-1">{usageStats.total_sentences_transformed}</div>
-              <div className="text-sm text-slate-500 mt-auto text-right">Sentences</div>
-            </div>
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                Total sentences processed
-              </div>
-            </div>
+          <div className="bg-white p-6 rounded-lg border border-slate-200 relative flex flex-col h-32">
+            <div className="text-3xl text-purple-600 mb-1">{usageStats.total_sentences_transformed}</div>
+            <div className="text-sm text-slate-500 mt-auto mb-2">Sentences</div>
           </div>
         </div>
       )}
@@ -149,32 +116,68 @@ export function Dashboard() {
         </div>
         
         {dailyStats.length > 0 ? (
-          <div className="w-full overflow-x-auto">
-            <div 
-              className="flex items-end gap-1 h-32 min-w-full"
-              style={{ 
-                minWidth: selectedPeriod === 30 ? '600px' : 'auto'
-              }}
-            >
-              {dailyStats.map((day, index) => (
-                <div key={index} className="flex-1 flex flex-col items-center gap-1 min-w-0">
-                  <div
-                    className="w-full bg-blue-500 rounded-t max-w-8"
-                    style={{
-                      height: `${(day.transformation_count / getMaxCount()) * 100}%`,
-                      minHeight: day.transformation_count > 0 ? '4px' : '0px'
-                    }}
-                    title={`${day.transformation_count} transformations, ${day.word_count} words`}
-                  ></div>
-                  <div className="text-xs text-slate-500 text-center truncate w-full">
-                    {new Date(day.date).toLocaleDateString('en-US', { 
-                      month: selectedPeriod === 30 ? 'numeric' : 'short',
-                      day: 'numeric' 
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={dailyStats.map(day => ({
+                  ...day,
+                  displayDate: new Date(day.date).toLocaleDateString('en-US', { 
+                    month: selectedPeriod === 30 ? 'numeric' : 'short',
+                    day: 'numeric' 
+                  })
+                }))}
+                margin={{
+                  top: 5,
+                  right: 20,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <XAxis 
+                  dataKey="displayDate"
+                  fontSize={12}
+                  tick={{ fill: '#64748b' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis 
+                  fontSize={12}
+                  tick={false}
+                  domain={[0, 'dataMax + 1']}
+                  axisLine={false}
+                  tickLine={false}
+                  width={0}
+                />
+                <Tooltip 
+                  formatter={(value, name) => {
+                    switch (name) {
+                      case 'transformation_count':
+                        return [value, 'Transformations'];
+                      case 'word_count':
+                        return [value, 'Words'];
+                      case 'sentence_count':
+                        return [value, 'Sentences'];
+                      default:
+                        return [value, name];
+                    }
+                  }}
+                  labelFormatter={(label) => `Date: ${label}`}
+                  contentStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    color: '#334155',
+                    fontSize: '12px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
+                <Bar 
+                  dataKey="transformation_count" 
+                  fill="#3b82f6" 
+                  radius={[2, 2, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         ) : (
           <div className="text-slate-500 text-center py-8">No activity data available</div>
