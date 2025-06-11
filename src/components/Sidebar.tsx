@@ -5,13 +5,13 @@ interface SidebarProps {
 
 export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
   return (
-    <nav className="fixed left-0 top-0 h-screen w-14 bg-white border-r border-slate-200 z-[1000]">
+    <nav className="fixed left-0 top-0 h-screen w-14 bg-background-secondary border-r border-border-primary z-[1000]">
       <div className="py-4 flex flex-col gap-2 h-full">
         {/* Main navigation buttons */}
         <div className="flex flex-col gap-2">
           <button
-            className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-slate-100 hover:text-blue-500 hover:scale-105 ${
-              activeSection === 'dashboard' ? 'text-blue-500' : 'text-slate-500'
+            className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-background-tertiary hover:text-accent-primary hover:scale-105 ${
+              activeSection === 'dashboard' ? 'text-accent-primary' : 'text-text-secondary'
             }`}
             onClick={() => onSectionChange('dashboard')}
             title="Dashboard"
@@ -21,8 +21,8 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
             </svg>
           </button>
           <button
-            className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-slate-100 hover:text-blue-500 hover:scale-105 ${
-              activeSection === 'history' ? 'text-blue-500' : 'text-slate-500'
+            className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-background-tertiary hover:text-accent-primary hover:scale-105 ${
+              activeSection === 'history' ? 'text-accent-primary' : 'text-text-secondary'
             }`}
             onClick={() => onSectionChange('history')}
             title="Transformation History"
@@ -32,8 +32,8 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
             </svg>
           </button>
           <button
-            className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-slate-100 hover:text-blue-500 hover:scale-105 ${
-              activeSection === 'prompts' ? 'text-blue-500' : 'text-slate-500'
+            className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-background-tertiary hover:text-accent-primary hover:scale-105 ${
+              activeSection === 'prompts' ? 'text-accent-primary' : 'text-text-secondary'
             }`}
             onClick={() => onSectionChange('prompts')}
             title="Prompt Settings"
@@ -50,8 +50,8 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         {/* Bottom navigation buttons */}
         <div className="flex flex-col gap-2 pb-4">
           <button
-            className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-slate-100 hover:text-blue-500 hover:scale-105 ${
-              activeSection === 'api' ? 'text-blue-500' : 'text-slate-500'
+            className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-background-tertiary hover:text-accent-primary hover:scale-105 ${
+              activeSection === 'api' ? 'text-accent-primary' : 'text-text-secondary'
             }`}
             onClick={() => onSectionChange('api')}
             title="Settings"
@@ -62,8 +62,8 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
             </svg>
           </button>
           <button
-            className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-slate-100 hover:text-blue-500 hover:scale-105 ${
-              activeSection === 'info' ? 'text-blue-500' : 'text-slate-500'
+            className={`flex items-center justify-center p-2 mx-2 border-0 bg-transparent cursor-pointer rounded-lg transition-all duration-300 ease-out hover:bg-background-tertiary hover:text-accent-primary hover:scale-105 ${
+              activeSection === 'info' ? 'text-accent-primary' : 'text-text-secondary'
             }`}
             onClick={() => onSectionChange('info')}
             title="About Milo"

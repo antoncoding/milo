@@ -192,7 +192,7 @@ export function History() {
           } else if (wordDiff.change_type === 'added' && isTransformed) {
             className = 'bg-green-100 text-green-800 px-1 rounded';
           } else if (wordDiff.change_type === 'unchanged') {
-            className = 'text-slate-700';
+            className = 'text-text-primary';
           }
           
           return (
@@ -214,10 +214,10 @@ export function History() {
     return (
       <div className="p-6 space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-slate-200 rounded w-1/3 mb-4"></div>
+          <div className="h-8 bg-border-primary rounded w-1/3 mb-4"></div>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-24 bg-slate-200 rounded"></div>
+              <div key={i} className="h-24 bg-border-primary rounded"></div>
             ))}
           </div>
         </div>
@@ -240,39 +240,39 @@ export function History() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl text-slate-800">Transformation History</h1>
-            <p className="text-slate-600 mt-1">View your past text transformations</p>
+            <h1 className="text-2xl text-text-primary">Transformation History</h1>
+            <p className="text-text-secondary mt-1">View your past text transformations</p>
           </div>
         </div>
 
         {/* Recent Transformations */}
-        <div className="bg-white rounded-lg border border-slate-200">
-          <div className="p-6 border-b border-slate-200">
-            <h2 className="text-lg text-slate-800">Recent Transformations</h2>
+        <div className="bg-background-secondary rounded-lg border border-border-primary">
+          <div className="p-6 border-b border-border-primary">
+            <h2 className="text-lg text-text-primary">Recent Transformations</h2>
           </div>
           
           {entries.length > 0 ? (
-            <div className="divide-y divide-slate-200">
+            <div className="divide-y divide-border-primary">
               {entries.map((entry, index) => (
-                <div key={index} className="p-4 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => toggleDiffView(index)}>
+                <div key={index} className="p-4 cursor-pointer hover:bg-background-tertiary transition-colors" onClick={() => toggleDiffView(index)}>
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                      <span className="px-2 py-1 text-xs bg-accent-primary/10 text-accent-primary rounded">
                         {entry.tone_name}
                       </span>
                       {(entry.added_count > 0 || entry.removed_count > 0) && (
-                        <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                        <span className="text-xs text-text-secondary bg-background-tertiary px-2 py-1 rounded">
                           <span className="text-green-600">+{entry.added_count}</span>
                           {' '}
                           <span className="text-red-600">-{entry.removed_count}</span>
                         </span>
                       )}
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-text-tertiary">
                         {entry.sentence_count} sentences
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-text-tertiary">
                         {formatTimeAgo(entry.timestamp)}
                       </span>
                       <button
@@ -291,48 +291,48 @@ export function History() {
                   </div>
                   
                   <div 
-                    className="text-sm text-slate-800 overflow-x-auto whitespace-nowrap scrollbar-hide py-1"
+                    className="text-sm text-text-primary overflow-x-auto whitespace-nowrap scrollbar-hide py-1"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
                     <span className="inline-block">{entry.transformed_text}</span>
                   </div>
                   
                   {expandedEntry === index && diffData[index] && (
-                    <div className="mt-4 space-y-4 border-t pt-4">
+                    <div className="mt-4 space-y-4 border-t border-border-primary pt-4">
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm text-slate-700">Original</span>
+                          <span className="text-sm text-text-primary">Original</span>
                           <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
                             -{diffData[index].removed_count} words
                           </span>
                         </div>
-                        <div className="border border-slate-200 rounded-lg p-3 bg-slate-50">
+                        <div className="border border-border-primary rounded-lg p-3 bg-background-tertiary">
                           {renderDiffText(diffData[index].original_diff, false)}
                         </div>
                       </div>
 
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm text-slate-700">Transformed</span>
+                          <span className="text-sm text-text-primary">Transformed</span>
                           <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
                             +{diffData[index].added_count} words
                           </span>
                         </div>
-                        <div className="border border-slate-200 rounded-lg p-3 bg-slate-50">
+                        <div className="border border-border-primary rounded-lg p-3 bg-background-tertiary">
                           {renderDiffText(diffData[index].transformed_diff, true)}
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-200">
-                        <p className="text-xs text-slate-500 mb-2">Legend:</p>
+                      <div className="pt-2 border-t border-border-primary">
+                        <p className="text-xs text-text-tertiary mb-2">Legend:</p>
                         <div className="flex gap-4 text-xs">
                           <div className="flex items-center gap-1">
                             <span className="bg-red-100 text-red-800 px-2 py-1 rounded">removed</span>
-                            <span className="text-slate-600">deleted words</span>
+                            <span className="text-text-secondary">deleted words</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <span className="bg-green-100 text-green-800 px-2 py-1 rounded">added</span>
-                            <span className="text-slate-600">added words</span>
+                            <span className="text-text-secondary">added words</span>
                           </div>
                         </div>
                       </div>
@@ -343,13 +343,13 @@ export function History() {
             </div>
           ) : (
             <div className="p-8 text-center">
-              <div className="text-slate-400 mb-2">
+              <div className="text-text-tertiary mb-2">
                 <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-slate-500">No transformation history yet</p>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className="text-text-tertiary">No transformation history yet</p>
+              <p className="text-sm text-text-tertiary mt-1">
                 Start transforming text to see your history here
               </p>
             </div>

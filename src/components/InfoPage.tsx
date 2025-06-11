@@ -37,7 +37,7 @@ export function InfoPage() {
     
     return keys.map((key, index) => (
       <span key={index}>
-        <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">
+        <kbd className="px-2 py-1 text-xs font-semibold text-text-primary bg-background-tertiary border border-border-primary rounded-lg">
           {key}
         </kbd>
         {index < keys.length - 1 && <span className="mx-1">+</span>}
@@ -48,27 +48,27 @@ export function InfoPage() {
   return (
     <div className="max-w-3xl mx-auto p-8 text-center flex flex-col items-center justify-center min-h-[80vh]">
       <img src={miloLogo} className="w-24 mb-4" alt="Milo logo" />
-      <p className="text-2xl">Welcome to Milo</p>
+      <p className="text-2xl text-text-primary">Welcome to Milo</p>
       
       <div className="mt-8 text-center max-w-md">
-        <p className="text-slate-600 leading-relaxed mb-8 text-sm">
+        <p className="text-text-secondary leading-relaxed mb-8 text-sm">
           Milo helps you improve your writing by transforming text in your <span className="">clipboard</span>. 
           Simply copy any text and use the shortcut to transform it!
         </p>
 
         {shortcut.length > 0 && (
-          <div className="mx-auto w-full max-w-80 p-4 bg-white/80 border border-gray-200 rounded-lg shadow-sm my-6">
+          <div className="mx-auto w-full max-w-80 p-4 bg-background-secondary border border-border-primary rounded-lg shadow-sm my-6">
             <div className="text-center">
-              <p className="text-sm text-slate-600 mb-2">Current Transform Shortcut:</p>
+              <p className="text-sm text-text-secondary mb-2">Current Transform Shortcut:</p>
               <div className="flex justify-center items-center gap-1 mb-2">
                 {renderShortcutKeys(shortcut)}
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-text-tertiary">
                 Status: <span className={shortcutEnabled ? "text-green-600" : "text-red-600"}>
                   {shortcutEnabled ? "Enabled" : "Disabled"}
                 </span>
               </p>
-              <p className="text-xs text-slate-400 mt-2">
+              <p className="text-xs text-text-tertiary mt-2">
                 Configure shortcuts in Settings
               </p>
             </div>

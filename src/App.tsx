@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
+import { ThemeProvider } from "./context/ThemeContext";
 import { Settings } from "./components/ApiSettings";
 import { PromptSettings } from "./components/PromptSettings";
 import { Sidebar } from "./components/Sidebar";
@@ -109,7 +110,7 @@ function App() {
 
   const renderContent = () => {
     if (loading) {
-      return <div className="flex items-center justify-center min-h-screen text-slate-600">Loading...</div>;
+      return <div className="flex items-center justify-center min-h-screen text-text-secondary">Loading...</div>;
     }
 
     switch (activeSection) {
@@ -129,7 +130,7 @@ function App() {
   };
 
   return (
-    <>
+    <ThemeProvider>
       <Sidebar 
         activeSection={activeSection} 
         onSectionChange={setActiveSection}
@@ -139,7 +140,7 @@ function App() {
           {renderContent()}
         </div>
       </div>
-    </>
+    </ThemeProvider>
   );
 }
 

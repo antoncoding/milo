@@ -3,15 +3,44 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Light theme colors */
+    --bg-primary: #F5F5F7;
+    --bg-secondary: #FFFFFF;
+    --bg-tertiary: #F8F9FA;
+    --text-primary: #1C1C1E;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --border-primary: #E5E7EB;
+    --border-secondary: #D1D5DB;
+    --accent-primary: #3B82F6;
+    --accent-secondary: #6366F1;
+  }
+
+  .dark {
+    /* Dark theme colors */
+    --bg-primary: #0F172A;
+    --bg-secondary: #1E293B;
+    --bg-tertiary: #334155;
+    --text-primary: #F8FAFC;
+    --text-secondary: #CBD5E1;
+    --text-tertiary: #94A3B8;
+    --border-primary: #475569;
+    --border-secondary: #64748B;
+    --accent-primary: #60A5FA;
+    --accent-secondary: #818CF8;
+  }
+
   body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: #F5F5F7;
-    color: #1C1C1E;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     font-weight: 400;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
   h1, h2, h3, h4, h5, h6 {

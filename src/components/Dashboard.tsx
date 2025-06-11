@@ -48,10 +48,10 @@ export function Dashboard() {
     return (
       <div className="p-6 space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-slate-200 rounded w-1/3 mb-4"></div>
+          <div className="h-8 bg-border-primary rounded w-1/3 mb-4"></div>
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-20 bg-slate-200 rounded"></div>
+              <div key={i} className="h-20 bg-border-primary rounded"></div>
             ))}
           </div>
         </div>
@@ -63,51 +63,51 @@ export function Dashboard() {
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl text-slate-800">Dashboard</h1>
-        <p className="text-slate-600 mt-1">Overview of your transformation activity</p>
+        <h1 className="text-2xl text-text-primary">Dashboard</h1>
+        <p className="text-text-secondary mt-1">Overview of your transformation activity</p>
       </div>
 
       {/* Usage Stats */}
       {usageStats && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg border border-slate-200 relative flex flex-col h-32">
-            <div className="text-3xl text-blue-600 mb-1">{usageStats.total_transformations}</div>
-            <div className="text-sm text-slate-500 mt-auto mb-2">Transformations</div>
+          <div className="bg-background-secondary p-6 rounded-lg border border-border-primary relative flex flex-col h-32">
+            <div className="text-3xl text-accent-primary mb-1">{usageStats.total_transformations}</div>
+            <div className="text-sm text-text-tertiary mt-auto mb-2">Transformations</div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg border border-slate-200 relative flex flex-col h-32">
+          <div className="bg-background-secondary p-6 rounded-lg border border-border-primary relative flex flex-col h-32">
             <div className="text-3xl text-green-600 mb-1">{usageStats.total_words_transformed}</div>
-            <div className="text-sm text-slate-500 mt-auto mb-2">Words</div>
+            <div className="text-sm text-text-tertiary mt-auto mb-2">Words</div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg border border-slate-200 relative flex flex-col h-32">
+          <div className="bg-background-secondary p-6 rounded-lg border border-border-primary relative flex flex-col h-32">
             <div className="text-3xl text-purple-600 mb-1">{usageStats.total_sentences_transformed}</div>
-            <div className="text-sm text-slate-500 mt-auto mb-2">Sentences</div>
+            <div className="text-sm text-text-tertiary mt-auto mb-2">Sentences</div>
           </div>
         </div>
       )}
 
       {/* Daily Activity Chart */}
-      <div className="bg-white p-6 rounded-lg border border-slate-200">
+      <div className="bg-background-secondary p-6 rounded-lg border border-border-primary">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg text-slate-800">Daily Activity</h2>
+          <h2 className="text-lg text-text-primary">Daily Activity</h2>
           <div className="flex gap-2">
             <button
               onClick={() => setSelectedPeriod(7)}
-              className={`px-3 py-1 text-sm rounded ${
+              className={`px-3 py-1 text-sm rounded transition-colors ${
                 selectedPeriod === 7
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  ? 'bg-accent-primary/10 text-accent-primary'
+                  : 'text-text-secondary hover:bg-background-tertiary'
               }`}
             >
               7 Days
             </button>
             <button
               onClick={() => setSelectedPeriod(30)}
-              className={`px-3 py-1 text-sm rounded ${
+              className={`px-3 py-1 text-sm rounded transition-colors ${
                 selectedPeriod === 30
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  ? 'bg-accent-primary/10 text-accent-primary'
+                  : 'text-text-secondary hover:bg-background-tertiary'
               }`}
             >
               30 Days
@@ -136,7 +136,7 @@ export function Dashboard() {
                 <XAxis 
                   dataKey="displayDate"
                   fontSize={12}
-                  tick={{ fill: '#64748b' }}
+                  tick={{ fill: 'var(--text-secondary)' }}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -163,24 +163,24 @@ export function Dashboard() {
                   }}
                   labelFormatter={(label) => `Date: ${label}`}
                   contentStyle={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: '1px solid #e2e8f0',
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-primary)',
                     borderRadius: '6px',
-                    color: '#334155',
+                    color: 'var(--text-primary)',
                     fontSize: '12px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
                 />
                 <Bar 
                   dataKey="transformation_count" 
-                  fill="#3b82f6" 
+                  fill="var(--accent-primary)" 
                   radius={[2, 2, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="text-slate-500 text-center py-8">No activity data available</div>
+          <div className="text-text-tertiary text-center py-8">No activity data available</div>
         )}
       </div>
     </div>

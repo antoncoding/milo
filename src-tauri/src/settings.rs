@@ -11,6 +11,7 @@ pub struct Settings {
     pub first_visit_complete: Option<bool>,
     pub shortcut_enabled: Option<bool>,
     pub shortcut_keys: Option<String>,
+    pub theme: Option<String>,
 }
 
 impl Default for Settings {
@@ -27,6 +28,7 @@ impl Default for Settings {
             first_visit_complete: Some(false),
             shortcut_enabled: Some(true),
             shortcut_keys: Some("meta+KeyM".to_string()),
+            theme: Some("light".to_string()),
         }
     }
 }
@@ -50,6 +52,10 @@ impl Settings {
 
     pub fn get_shortcut_keys(&self) -> String {
         self.shortcut_keys.clone().unwrap_or_else(|| "meta+KeyM".to_string())
+    }
+
+    pub fn get_theme(&self) -> String {
+        self.theme.clone().unwrap_or_else(|| "light".to_string())
     }
 }
 
