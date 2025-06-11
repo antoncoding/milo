@@ -15,17 +15,21 @@ interface Settings {
   custom_prompts: {
     [key: string]: string;
   };
+  prompt_order: string[];
   selected_tone?: string;
-  firstVisitComplete?: boolean;
-  shortcutEnabled?: boolean;
+  first_visit_complete?: boolean;
+  shortcut_enabled?: boolean;
+  shortcut_keys?: string;
+  theme?: string;
 }
 
 function App() {
   const [settings, setSettings] = useState<Settings>({ 
     openai_model: "", 
     custom_prompts: {},
-    firstVisitComplete: false,
-    shortcutEnabled: true
+    prompt_order: [],
+    first_visit_complete: false,
+    shortcut_enabled: true
   });
   const [activeSection, setActiveSection] = useState("info");
   const [loading, setLoading] = useState(true);
@@ -57,7 +61,7 @@ function App() {
       .then((savedSettings: any) => {
         setSettings(savedSettings as any as Settings);
         // Set initial section based on whether it's first visit
-        if (!savedSettings.firstVisitComplete) {
+        if (!savedSettings.first_visit_complete) {
           setActiveSection('info');
         } else {
           setActiveSection('dashboard');
