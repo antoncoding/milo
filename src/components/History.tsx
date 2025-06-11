@@ -131,6 +131,7 @@ export function History() {
   const [loading, setLoading] = useState(true);
   const [expandedEntry, setExpandedEntry] = useState<number | null>(null);
   const [diffData, setDiffData] = useState<{[key: number]: TextDiff}>({});
+  const [copiedStates, setCopiedStates] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     loadHistoryData();
@@ -165,6 +166,62 @@ export function History() {
         await message(`Failed to delete entry: ${error}`, { title: 'Error', kind: 'error' });
       }
     }
+  };
+
+  const copyToClipboard = async (text: string, type: 'original' | 'transformed', entryIndex: number) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      const key = `${entryIndex}-${type}`;
+      setCopiedStates(prev => ({ ...prev, [key]: true }));
+      
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        setCopiedStates(prev => ({ ...prev, [key]: false }));
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to copy text:', error);
+      await message('Failed to copy text to clipboard', { title: 'Error', kind: 'error' });
+    }
+  };
+
+  const CopyButton = ({ 
+    text, 
+    type, 
+    entryIndex 
+  }: { 
+    text: string; 
+    type: 'original' | 'transformed'; 
+    entryIndex: number; 
+  }) => {
+    const key = `${entryIndex}-${type}`;
+    const isCopied = copiedStates[key];
+
+    return (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          copyToClipboard(text, type, entryIndex);
+        }}
+        className="flex items-center gap-1 text-xs text-text-secondary hover:text-text-primary transition-colors px-2 py-1 rounded hover:bg-background-tertiary"
+        title={`Copy ${type} text`}
+      >
+        {isCopied ? (
+          <>
+            <svg className="w-3 h-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="text-green-600">Copied!</span>
+          </>
+        ) : (
+          <>
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span>Copy</span>
+          </>
+        )}
+      </button>
+    );
   };
 
   const toggleDiffView = (index: number) => {
@@ -300,11 +357,18 @@ export function History() {
                   {expandedEntry === index && diffData[index] && (
                     <div className="mt-4 space-y-4 border-t border-border-primary pt-4">
                       <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm text-text-primary">Original</span>
-                          <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
-                            -{diffData[index].removed_count} words
-                          </span>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-text-primary">Original</span>
+                            <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                              -{diffData[index].removed_count} words
+                            </span>
+                          </div>
+                          <CopyButton 
+                            text={entry.original_text} 
+                            type="original" 
+                            entryIndex={index} 
+                          />
                         </div>
                         <div className="border border-border-primary rounded-lg p-3 bg-background-tertiary">
                           {renderDiffText(diffData[index].original_diff, false)}
@@ -312,11 +376,18 @@ export function History() {
                       </div>
 
                       <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm text-text-primary">Transformed</span>
-                          <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
-                            +{diffData[index].added_count} words
-                          </span>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-text-primary">Transformed</span>
+                            <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                              +{diffData[index].added_count} words
+                            </span>
+                          </div>
+                          <CopyButton 
+                            text={entry.transformed_text} 
+                            type="transformed" 
+                            entryIndex={index} 
+                          />
                         </div>
                         <div className="border border-border-primary rounded-lg p-3 bg-background-tertiary">
                           {renderDiffText(diffData[index].transformed_diff, true)}
