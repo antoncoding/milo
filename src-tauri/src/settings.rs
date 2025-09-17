@@ -24,7 +24,7 @@ impl Default for Settings {
             "Improve this text while maintaining its meaning:".to_string(),
         );
         Self {
-            openai_model: "gpt-4o-mini".to_string(),
+            openai_model: crate::config::CONFIG.default_model.clone(),
             custom_prompts,
             prompt_order: vec!["Improve Writing".to_string()],
             selected_tone: Some("Improve Writing".to_string()),
@@ -91,5 +91,13 @@ pub fn api_key_file_path() -> PathBuf {
     path.push("milo");
     fs::create_dir_all(&path).unwrap();
     path.push("api_key.txt");
+    path
+}
+
+pub fn litellm_api_key_file_path() -> PathBuf {
+    let mut path = config_dir().unwrap_or_else(|| PathBuf::from("."));
+    path.push("milo");
+    fs::create_dir_all(&path).unwrap();
+    path.push("litellm_api_key.txt");
     path
 }

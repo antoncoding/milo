@@ -1,7 +1,7 @@
 use tauri::Manager;
 
 use std::fs;
-use crate::{settings::{api_key_file_path, Settings}, state::AppState};
+use crate::{settings::{api_key_file_path, litellm_api_key_file_path, Settings}, state::AppState};
 
 #[tauri::command]
 pub async fn save_api_key(key: String) -> Result<(), String> {
@@ -12,6 +12,19 @@ pub async fn save_api_key(key: String) -> Result<(), String> {
 pub async fn get_api_key() -> Result<String, String> {
     fs::read_to_string(api_key_file_path()).map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub async fn save_litellm_api_key(key: String) -> Result<(), String> {
+    fs::write(litellm_api_key_file_path(), key).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn get_litellm_api_key() -> Result<String, String> {
+    fs::read_to_string(litellm_api_key_file_path()).map_err(|e| e.to_string())
+}
+
+
+
 
 #[tauri::command]
 pub async fn save_settings(state: tauri::State<'_, AppState>, settings: Settings) -> Result<(), String> {

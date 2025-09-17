@@ -33,6 +33,7 @@ arboard = "3.2"
 dirs = "4.0"
 chrono = { version = "0.4", features = ["serde"] }
 jieba-rs = "0.7"
+lazy_static = "1.4"
 
 # macOS-specific dependencies for native window manipulation
 [target.'cfg(target_os = "macos")'.dependencies]

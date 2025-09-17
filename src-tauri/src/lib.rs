@@ -8,6 +8,7 @@ mod shortcuts;
 mod system;
 mod history;
 mod core;
+mod config;
 
 use settings::Settings;
 use state::AppState;
@@ -22,6 +23,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new()
             .with_handler(|app, shortcut, event| {
                 println!("🎯 Shortcut handler triggered!");
@@ -35,11 +37,19 @@ pub fn run() {
                         tauri::async_runtime::spawn(async move {
                             if let Err(e) = core::transform_clip_with_setting(app_handle.clone(), true).await {
                                 println!("❌ Transform error: {}", e);
-                                let _ = app_handle.notification()
-                                    .builder()
-                                    .title("Transform Error")
-                                    .body(format!("Failed to transform: {}", e))
-                                    .show();
+
+                                // Show notification for rate limit errors - users need to know!
+                                if e.contains("rate limit") || e.contains("Rate limit") {
+                                    // Use a simple spawn to avoid blocking and potential crashes
+                                    let notification_handle = app_handle.clone();
+                                    tokio::spawn(async move {
+                                        let _ = notification_handle.notification()
+                                            .builder()
+                                            .title("Milo - Rate Limited")
+                                            .body("Not enough API balance! Please top up your account and try again.")
+                                            .show();
+                                    });
+                                }
                             } else {
                                 println!("✅ Transform completed successfully");
                             }
@@ -68,6 +78,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             api::save_api_key,
             api::get_api_key,
+            api::save_litellm_api_key,
+            api::get_litellm_api_key,
             api::save_settings,
             api::get_settings,
             api::show_settings,

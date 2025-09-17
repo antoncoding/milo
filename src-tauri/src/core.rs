@@ -4,7 +4,7 @@ use arboard::Clipboard;
 
 use crate::transform::transform_text;
 use crate::history::add_transformation_to_history;
-use crate::api::get_api_key;
+use crate::api::get_litellm_api_key;
 
 // Helper function to clean text while preserving formatting
 fn clean_text(text: &str) -> String {
@@ -33,17 +33,17 @@ pub async fn transform_clipboard(
     let prompt = settings.custom_prompts.get(&prompt_key)
         .ok_or_else(|| format!("Prompt not found for key: {}", prompt_key))?
         .clone();
-    
-    // Get API key and transform
-    let api_key = get_api_key().await
-        .map_err(|e| format!("Failed to get API key: {}", e))?;
-    
+
+    // Get LiteLLM API key and transform
+    let litellm_api_key = get_litellm_api_key().await
+        .map_err(|e| format!("Failed to get LiteLLM API key: {}", e))?;
+
     // Drop the lock before async operation
     drop(settings);
-    
-    let transformed_text = transform_text(&cleaned_original, &prompt, &api_key).await?;
+
+    let transformed_text = transform_text(&cleaned_original, &prompt, &litellm_api_key).await?;
     let cleaned_transformed = clean_text(&transformed_text);
-    
+
     // Set transformed text back to clipboard
     clipboard.set_text(&cleaned_transformed)
         .map_err(|e| format!("Failed to set clipboard text: {}", e))?;
@@ -55,13 +55,8 @@ pub async fn transform_clipboard(
         cleaned_transformed,
     )?;
 
-    // Send notification
-    handle.notification()
-        .builder()
-        .title("Milo")
-        .body(format!("Text transformed with {} tone!", prompt_key))
-        .show()
-        .unwrap();
+    // Success! Don't show notification - causes crashes on macOS
+    // User will see the transformed text in their clipboard
 
     Ok(())
 }
@@ -77,16 +72,16 @@ pub async fn transform_clip_with_setting(handle: tauri::AppHandle, is_shortcut: 
     if is_shortcut && !settings.is_shortcut_enabled() {
         return Ok(());
     }
-    
+
     let tone_key = settings.selected_tone.clone()
         .ok_or_else(|| "No tone selected".to_string())?;
-    
+
     // Update selected tone in settings
     settings.save()?;
-    
+
     // Drop the lock before transformation
     drop(settings);
-    
+
     // Perform transformation (which now includes history tracking)
     transform_clipboard(handle.clone(), tone_key).await
 } 

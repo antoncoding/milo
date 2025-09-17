@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { ask, message } from '@tauri-apps/plugin-dialog';
+import { open } from '@tauri-apps/plugin-shell';
 import { ShortcutItem } from "./ShortcutItem";
 import { ThemeSelector } from "./ThemeSelector";
 import { useShortcutEditor } from "../hooks/useShortcutEditor";
 import { backendFormatToShortcut, shortcutToBackendFormat, Shortcut } from "../utils/keyboardUtils";
+import { CONFIG } from "../config";
 
 interface Settings {
   openai_model: string;
@@ -16,10 +18,12 @@ interface Settings {
   shortcutEnabled?: boolean;
 }
 
+
 export function Settings() {
   const [apiKey, setApiKey] = useState("");
-  const [settings, setSettings] = useState<Settings>({ 
-    openai_model: "", 
+  const [litellmApiKey, setLitellmApiKey] = useState("");
+  const [settings, setSettings] = useState<Settings>({
+    openai_model: "",
     custom_prompts: {},
     firstVisitComplete: false,
     shortcutEnabled: true
@@ -36,10 +40,13 @@ export function Settings() {
   const loadSettings = async () => {
     try {
       setLoading(true);
-      
-      // Load API key
+
+      // Load API keys
       const savedApiKey = await invoke<string>('get_api_key');
       setApiKey(savedApiKey || '');
+
+      const savedLitellmApiKey = await invoke<string>('get_litellm_api_key');
+      setLitellmApiKey(savedLitellmApiKey || '');
       
       // Load general settings
       const savedSettings = await invoke<Settings>("get_settings");
@@ -57,18 +64,30 @@ export function Settings() {
     }
   };
 
-  const saveApiKey = async () => {
+  const saveLitellmApiKey = async () => {
     try {
       setSaving(true);
-      await invoke('save_api_key', { apiKey });
-      await message('API key saved successfully!', { title: 'Success', kind: 'info' });
+      await invoke('save_litellm_api_key', { key: litellmApiKey });
+      await message('LiteLLM API key saved successfully!', { title: 'Success', kind: 'info' });
     } catch (error) {
-      console.error('Failed to save API key:', error);
+      console.error('Failed to save LiteLLM API key:', error);
       await message('Failed to save API key. Please try again.', { title: 'Error', kind: 'error' });
     } finally {
       setSaving(false);
     }
   };
+
+  const openWebsite = async () => {
+    try {
+      const url = CONFIG?.website_url ?? '';
+      await open(url);
+    } catch (error) {
+      console.error('Failed to open website:', error);
+      const fallbackUrl = CONFIG?.website_url ?? '';
+      await message(`Failed to open website. Please visit: ${fallbackUrl}`, { title: 'Error', kind: 'error' });
+    }
+  };
+
 
   const handleShortcutToggle = async (enabled: boolean) => {
     try {
@@ -179,31 +198,59 @@ export function Settings() {
       {/* API Key Section */}
       <div className="bg-background-secondary p-6 rounded-lg border border-border-primary">
         <div className="mb-4">
-          <h2 className="text-lg text-text-primary">OpenAI API Configuration</h2>
-          <p className="text-sm text-text-secondary">Configure your OpenAI API key for text transformations</p>
+          <h2 className="text-lg text-text-primary">Milo API Configuration</h2>
+          <p className="text-sm text-text-secondary">Configure your Milo API key for text transformations</p>
         </div>
-        
+
         <div className="space-y-4">
+          {/* Instructions */}
+          <div className="bg-accent-primary/10 border border-accent-primary/30 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 w-5 h-5 mt-0.5">
+                <svg className="w-5 h-5 text-accent-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-medium text-text-primary mb-1">
+                  Get your API key from our website
+                </h3>
+                <p className="text-xs text-text-secondary mb-3">
+                  You need a Milo API key from our website to use text transformations. This connects to our LiteLLM proxy server.
+                </p>
+                <button
+                  onClick={openWebsite}
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-accent-primary text-white rounded hover:bg-accent-primary/90 transition-colors"
+                >
+                  <svg className="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Get API Key
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div>
-            <label htmlFor="apiKey" className="block text-sm text-text-primary mb-2">
-              API Key
+            <label htmlFor="litellmApiKey" className="block text-sm text-text-primary mb-2">
+              Milo API Key
             </label>
             <input
-              id="apiKey"
+              id="litellmApiKey"
               type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="sk-..."
+              value={litellmApiKey}
+              onChange={(e) => setLitellmApiKey(e.target.value)}
+              placeholder="milo-..."
               className="w-full px-3 py-2 border border-border-primary rounded-lg focus:ring-2 focus:ring-accent-primary focus:border-accent-primary bg-background-primary text-text-primary"
             />
             <p className="text-xs text-text-tertiary mt-1">
               Your API key is stored securely on your device and never shared.
             </p>
           </div>
-          
+
           <button
-            onClick={saveApiKey}
-            disabled={saving || !apiKey.trim()}
+            onClick={saveLitellmApiKey}
+            disabled={saving || !litellmApiKey.trim()}
             className="px-3 py-2 text-sm bg-background-tertiary text-text-secondary hover:bg-border-primary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? 'Saving...' : 'Save API Key'}
