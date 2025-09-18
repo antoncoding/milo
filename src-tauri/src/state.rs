@@ -1,6 +1,6 @@
+use crate::settings::Settings;
 use std::sync::Mutex;
 use tokio::sync::Mutex as TokioMutex;
-use crate::settings::Settings;
 
 pub struct AppState {
     pub settings: TokioMutex<Settings>,

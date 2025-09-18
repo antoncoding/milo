@@ -42,7 +42,7 @@ impl Settings {
             .ok()
             .and_then(|contents| serde_json::from_str(&contents).ok())
             .unwrap_or_default();
-        
+
         // Ensure backward compatibility: populate prompt_order if missing or empty
         if settings.prompt_order.is_empty() && !settings.custom_prompts.is_empty() {
             let mut prompt_names: Vec<String> = settings.custom_prompts.keys().cloned().collect();
@@ -52,11 +52,11 @@ impl Settings {
                 prompt_names.insert(0, improve_writing);
             }
             settings.prompt_order = prompt_names;
-            
+
             // Save the updated settings immediately to persist the migration
             let _ = settings.save();
         }
-        
+
         settings
     }
 
@@ -70,7 +70,9 @@ impl Settings {
     }
 
     pub fn get_shortcut_keys(&self) -> String {
-        self.shortcut_keys.clone().unwrap_or_else(|| "meta+KeyM".to_string())
+        self.shortcut_keys
+            .clone()
+            .unwrap_or_else(|| "meta+KeyM".to_string())
     }
 
     pub fn get_theme(&self) -> String {

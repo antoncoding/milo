@@ -1,9 +1,9 @@
-use tauri::{Manager, Emitter};
 use arboard::Clipboard;
+use tauri::Manager;
 
-use crate::transform::transform_text;
-use crate::history::add_transformation_to_history;
 use crate::api::get_litellm_api_key;
+use crate::history::add_transformation_to_history;
+use crate::transform::transform_text;
 
 // Helper function to clean text while preserving formatting
 fn clean_text(text: &str) -> String {
@@ -29,12 +29,15 @@ pub async fn transform_clipboard(
     // Get the state and prompt
     let state = handle.state::<crate::AppState>();
     let settings = state.settings.lock().await;
-    let prompt = settings.custom_prompts.get(&prompt_key)
+    let prompt = settings
+        .custom_prompts
+        .get(&prompt_key)
         .ok_or_else(|| format!("Prompt not found for key: {}", prompt_key))?
         .clone();
 
     // Get LiteLLM API key and transform
-    let litellm_api_key = get_litellm_api_key().await
+    let litellm_api_key = get_litellm_api_key()
+        .await
         .map_err(|e| format!("Failed to get LiteLLM API key: {}", e))?;
 
     // Drop the lock before async operation
@@ -44,26 +47,30 @@ pub async fn transform_clipboard(
     let cleaned_transformed = clean_text(&transformed_text);
 
     // Set transformed text back to clipboard
-    clipboard.set_text(&cleaned_transformed)
+    clipboard
+        .set_text(&cleaned_transformed)
         .map_err(|e| format!("Failed to set clipboard text: {}", e))?;
 
     // Store in history (this is the key addition!)
-    add_transformation_to_history(
-        prompt_key.clone(),
-        cleaned_original,
-        cleaned_transformed,
-    )?;
+    add_transformation_to_history(prompt_key.clone(), cleaned_original, cleaned_transformed)?;
 
-    // Emit success notification
-    let notification_message = format!("Successfully transformed with \"{}\" tone", prompt_key);
-    let _ = handle.emit("transformation_complete", notification_message);
+    crate::notifications::show_notification(
+        &handle,
+        "Milo",
+        format!("Text transformed with {} tone!", prompt_key),
+    );
+
+    println!("Text transformed with {} tone!", prompt_key);
 
     Ok(())
 }
 
 // Function that reads tone from settings and performs transform with history
 #[tauri::command]
-pub async fn transform_clip_with_setting(handle: tauri::AppHandle, is_shortcut: bool) -> Result<(), String> {
+pub async fn transform_clip_with_setting(
+    handle: tauri::AppHandle,
+    is_shortcut: bool,
+) -> Result<(), String> {
     // Get the state and selected tone
     let state = handle.state::<crate::AppState>();
     let settings = state.settings.lock().await;
@@ -73,7 +80,9 @@ pub async fn transform_clip_with_setting(handle: tauri::AppHandle, is_shortcut: 
         return Ok(());
     }
 
-    let tone_key = settings.selected_tone.clone()
+    let tone_key = settings
+        .selected_tone
+        .clone()
         .ok_or_else(|| "No tone selected".to_string())?;
 
     // Update selected tone in settings
@@ -84,4 +93,4 @@ pub async fn transform_clip_with_setting(handle: tauri::AppHandle, is_shortcut: 
 
     // Perform transformation (which now includes history tracking)
     transform_clipboard(handle.clone(), tone_key).await
-} 
+}

@@ -1,19 +1,19 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-mod transform;
-mod settings;
-mod state;
-mod tray;
 mod api;
-mod shortcuts;
-mod system;
-mod history;
-mod core;
 mod config;
+mod core;
+mod history;
+mod notifications;
+mod settings;
+mod shortcuts;
+mod state;
+mod system;
+mod transform;
+mod tray;
 
 use settings::Settings;
 use state::AppState;
 use tauri::Manager;
-use tauri_plugin_notification::NotificationExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -30,7 +30,7 @@ pub fn run() {
                 println!("🎯 Shortcut handler triggered!");
                 println!("   Received shortcut: {:?}", shortcut);
                 println!("   Event state: {:?}", event.state());
-                
+
                 match event.state() {
                     tauri_plugin_global_shortcut::ShortcutState::Pressed => {
                         println!("⬇️  Shortcut PRESSED - triggering transform");
@@ -39,16 +39,14 @@ pub fn run() {
                             if let Err(e) = core::transform_clip_with_setting(app_handle.clone(), true).await {
                                 println!("❌ Transform error: {}", e);
 
-                                // Show notification for rate limit errors - users need to know!
                                 if e.contains("rate limit") || e.contains("Rate limit") {
-                                    // Use a simple spawn to avoid blocking and potential crashes
                                     let notification_handle = app_handle.clone();
                                     tokio::spawn(async move {
-                                        let _ = notification_handle.notification()
-                                            .builder()
-                                            .title("Milo - Rate Limited")
-                                            .body("Not enough API balance! Please top up your account and try again.")
-                                            .show();
+                                        crate::notifications::show_notification(
+                                            &notification_handle,
+                                            "Milo - Rate Limited",
+                                            "Not enough API balance! Please top up your account and try again.",
+                                        );
                                     });
                                 }
                             } else {
@@ -65,14 +63,14 @@ pub fn run() {
         .setup(|app| {
             println!("Starting Milo app...");
             let _tray = tray::create_tray_menu(app)?;
-            
+
             // Register global shortcuts
             #[cfg(desktop)]
             shortcuts::register_shortcuts(&app.handle())?;
 
             #[cfg(target_os = "macos")]#[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
-            
+
             Ok(())
         })
         .manage(app_state)
@@ -109,7 +107,7 @@ pub fn run() {
                     #[cfg(target_os = "macos")]
                     if let Some(window) = _app.get_webview_window("main") {
                         let _ = crate::system::move_window_to_active_space(&window);
-                        
+
                         // Small delay then re-focus to ensure it sticks
                         std::thread::sleep(std::time::Duration::from_millis(50));
                         let _ = window.set_focus();

@@ -1,6 +1,6 @@
+use std::sync::Mutex;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
-use std::sync::Mutex;
 
 use crate::state::AppState;
 
@@ -14,7 +14,9 @@ pub fn register_shortcuts(app_handle: &AppHandle) -> Result<(), Box<dyn std::err
     Ok(())
 }
 
-fn register_transform_shortcut_from_settings(app_handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+fn register_transform_shortcut_from_settings(
+    app_handle: &AppHandle,
+) -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(desktop)]
     {
         println!("📱 Getting shortcut from settings...");
@@ -29,13 +31,13 @@ fn register_transform_shortcut_from_settings(app_handle: &AppHandle) -> Result<(
         println!("🔍 Parsing shortcut string: '{}'", shortcut_str);
         let shortcut = parse_shortcut(&shortcut_str)?;
         println!("✅ Successfully parsed shortcut: {:?}", shortcut);
-        
+
         register_transform_shortcut(app_handle, shortcut)?;
-        
+
         // Store current shortcut
         *CURRENT_SHORTCUT.lock().unwrap() = Some(shortcut);
         println!("💾 Stored current shortcut in memory");
-        
+
         Ok(())
     }
     #[cfg(not(desktop))]
@@ -45,11 +47,14 @@ fn register_transform_shortcut_from_settings(app_handle: &AppHandle) -> Result<(
     }
 }
 
-fn register_transform_shortcut(app_handle: &AppHandle, shortcut: Shortcut) -> Result<(), Box<dyn std::error::Error>> {
+fn register_transform_shortcut(
+    app_handle: &AppHandle,
+    shortcut: Shortcut,
+) -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(desktop)]
     {
         println!("🔄 Registering transform shortcut: {:?}", shortcut);
-        
+
         // Register the shortcut with the system
         app_handle.global_shortcut().register(shortcut).map_err(|e| {
             let error_msg = format!("Failed to register shortcut {:?}: {}. This shortcut may already be in use by another application.", shortcut, e);
@@ -57,7 +62,7 @@ fn register_transform_shortcut(app_handle: &AppHandle, shortcut: Shortcut) -> Re
             error_msg
         })?;
         println!("✅ Shortcut registered with system: {:?}", shortcut);
-        
+
         Ok(())
     }
     #[cfg(not(desktop))]
@@ -71,29 +76,29 @@ fn parse_shortcut(shortcut_str: &str) -> Result<Shortcut, Box<dyn std::error::Er
     println!("🔍 Parsing shortcut: '{}'", shortcut_str);
     let parts: Vec<&str> = shortcut_str.split('+').collect();
     println!("📝 Split into parts: {:?}", parts);
-    
+
     let mut modifiers = Modifiers::empty();
     let mut code = None;
-    
+
     for part in parts {
         println!("   Processing part: '{}'", part);
         match part.to_lowercase().as_str() {
             "meta" | "cmd" | "command" => {
                 modifiers |= Modifiers::META;
                 println!("     → Added META modifier");
-            },
+            }
             "ctrl" | "control" => {
                 modifiers |= Modifiers::CONTROL;
                 println!("     → Added CONTROL modifier");
-            },
+            }
             "alt" | "option" => {
                 modifiers |= Modifiers::ALT;
                 println!("     → Added ALT modifier");
-            },
+            }
             "shift" => {
                 modifiers |= Modifiers::SHIFT;
                 println!("     → Added SHIFT modifier");
-            },
+            }
             key => {
                 println!("     → Processing key code: '{}'", key);
                 // Try to parse as a key code
@@ -138,7 +143,7 @@ fn parse_shortcut(shortcut_str: &str) -> Result<Shortcut, Box<dyn std::error::Er
                     _ => {
                         println!("     ❌ Unknown key code: '{}'", key);
                         None
-                    },
+                    }
                 };
                 if let Some(parsed_code) = code {
                     println!("     ✅ Parsed key code: {:?}", parsed_code);
@@ -147,16 +152,16 @@ fn parse_shortcut(shortcut_str: &str) -> Result<Shortcut, Box<dyn std::error::Er
             }
         }
     }
-    
+
     let code = code.ok_or("Invalid key code")?;
-    let modifier_option = if modifiers.is_empty() { 
+    let modifier_option = if modifiers.is_empty() {
         println!("📝 No modifiers found");
-        None 
-    } else { 
+        None
+    } else {
         println!("📝 Final modifiers: {:?}", modifiers);
-        Some(modifiers) 
+        Some(modifiers)
     };
-    
+
     let shortcut = Shortcut::new(modifier_option, code);
     println!("✅ Created shortcut: {:?}", shortcut);
     Ok(shortcut)
@@ -177,7 +182,7 @@ pub async fn update_shortcut(
     shortcut_keys: String,
 ) -> Result<(), String> {
     println!("🔄 Update shortcut request received: '{}'", shortcut_keys);
-    
+
     // Validate shortcut format
     println!("🔍 Validating shortcut format...");
     parse_shortcut(&shortcut_keys).map_err(|e| {
@@ -186,12 +191,12 @@ pub async fn update_shortcut(
         error_msg
     })?;
     println!("✅ Shortcut format validated");
-    
+
     // Unregister current shortcut
     println!("🔄 Unregistering current shortcut...");
     unregister_current_shortcut(&app_handle)?;
     println!("✅ Current shortcut unregistered");
-    
+
     // Update settings
     {
         println!("💾 Updating settings...");
@@ -204,7 +209,7 @@ pub async fn update_shortcut(
         })?;
         println!("✅ Settings updated and saved");
     }
-    
+
     // Register new shortcut
     println!("🔄 Registering new shortcut...");
     let shortcut = parse_shortcut(&shortcut_keys).map_err(|e| {
@@ -212,17 +217,17 @@ pub async fn update_shortcut(
         println!("❌ Shortcut parsing failed: {}", error_msg);
         error_msg
     })?;
-    
+
     register_transform_shortcut(&app_handle, shortcut).map_err(|e| {
         let error_msg = format!("Failed to register shortcut: {}", e);
         println!("❌ Shortcut registration failed: {}", error_msg);
         error_msg
     })?;
-    
+
     // Update current shortcut
     *CURRENT_SHORTCUT.lock().unwrap() = Some(shortcut);
     println!("✅ Shortcut update completed successfully");
-    
+
     Ok(())
 }
 
@@ -242,7 +247,8 @@ fn unregister_current_shortcut(app_handle: &AppHandle) -> Result<(), String> {
         let current = *CURRENT_SHORTCUT.lock().unwrap();
         if let Some(shortcut) = current {
             println!("🔄 Unregistering shortcut: {:?}", shortcut);
-            app_handle.global_shortcut()
+            app_handle
+                .global_shortcut()
                 .unregister(shortcut)
                 .map_err(|e| {
                     let error_msg = format!("Failed to unregister shortcut: {}", e);

@@ -85,25 +85,9 @@ function App() {
         console.log("Clipboard transformation complete");
       } catch (error) {
         console.error("Failed to transform clipboard:", error);
-
-        // Show error notification to user
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        sendNotification({
-          title: 'Milo - Transform Error',
-          body: errorMessage,
-          icon: '/icon.png'
-        });
       }
     });
 
-    // Listen for transformation complete events
-    const unlistenTransform = listen('transformation_complete', (event) => {
-      sendNotification({
-        title: 'Milo',
-        body: event.payload as string,
-        icon: '/icon.png'
-      });
-    });
 
     // Listen for navigation events from tray
     const unlistenNavigate = listen('navigate-to-section', (event) => {
@@ -115,7 +99,6 @@ function App() {
     return () => {
       unlisten.then((fn) => fn());
       unlistenNotification.then(fn => fn());
-      unlistenTransform.then(fn => fn());
       unlistenNavigate.then(fn => fn());
     };
   }, []);
@@ -143,15 +126,13 @@ function App() {
 
   return (
     <ThemeProvider>
-      <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        <Sidebar
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-        />
-        <div className="ml-14 flex-1">
-          <div className="mx-auto px-8 py-8 max-w-3xl">
-            {renderContent()}
-          </div>
+      <Sidebar
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+      />
+      <div className="ml-14 min-h-screen">
+        <div className="mx-auto px-8 py-8 max-w-3xl">
+          {renderContent()}
         </div>
       </div>
     </ThemeProvider>

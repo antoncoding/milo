@@ -6,7 +6,11 @@
       "WebFetch(domain:thatgurjot.com)",
       "Bash(pnpm add:*)",
       "Bash(pnpm tauri signer generate:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(cargo clean:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm tauri build:*)",
+      "Bash(pnpm tauri:*)"
     ],
     "deny": [],
     "ask": []

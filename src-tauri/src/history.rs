@@ -1,9 +1,9 @@
 use anyhow::Result;
+use chrono::{DateTime, NaiveDate, Utc};
 use dirs::config_dir;
+use jieba_rs::Jieba;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, path::PathBuf};
-use chrono::{DateTime, Utc, NaiveDate};
-use jieba_rs::Jieba;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TransformationEntry {
@@ -73,7 +73,7 @@ impl TransformationHistory {
     pub fn add_entry(&mut self, entry: TransformationEntry) {
         // Add to entries (most recent first)
         self.entries.insert(0, entry.clone());
-        
+
         // Enforce max entries limit
         if let Some(max) = self.max_entries {
             if self.entries.len() > max {
@@ -84,14 +84,14 @@ impl TransformationHistory {
         // Update daily stats
         let date = entry.timestamp.date_naive();
         let date_key = date.format("%Y-%m-%d").to_string();
-        
+
         let day_stats = self.daily_stats.entry(date_key).or_insert(DayStats {
             date,
             transformation_count: 0,
             word_count: 0,
             sentence_count: 0,
         });
-        
+
         day_stats.transformation_count += 1;
         day_stats.word_count += entry.word_count;
         day_stats.sentence_count += entry.sentence_count;
@@ -133,27 +133,29 @@ pub fn compute_word_diff(original: &str, transformed: &str) -> TextDiff {
     // Helper function to tokenize text into words
     let tokenize = |text: &str| -> Vec<String> {
         let jieba = Jieba::new();
-        let has_chinese = text.chars().any(|c| {
-            matches!(c, '\u{4e00}'..='\u{9fff}')
-        });
-        
+        let has_chinese = text.chars().any(|c| matches!(c, '\u{4e00}'..='\u{9fff}'));
+
         if has_chinese {
-            jieba.cut(text, false).into_iter().map(|s| s.to_string()).collect()
+            jieba
+                .cut(text, false)
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect()
         } else {
             text.split_whitespace().map(|s| s.to_string()).collect()
         }
     };
-    
+
     let original_words = tokenize(original);
     let transformed_words = tokenize(transformed);
-    
+
     // Compute LCS (Longest Common Subsequence) using dynamic programming
     let lcs = compute_lcs(&original_words, &transformed_words);
-    
+
     // Build diff for original text (mark deletions)
     let mut original_diff = Vec::new();
     let mut lcs_index = 0;
-    
+
     for (pos, word) in original_words.iter().enumerate() {
         if lcs_index < lcs.len() && *word == lcs[lcs_index] {
             // Word is unchanged
@@ -172,11 +174,11 @@ pub fn compute_word_diff(original: &str, transformed: &str) -> TextDiff {
             });
         }
     }
-    
+
     // Build diff for transformed text (mark additions)
     let mut transformed_diff = Vec::new();
     let mut lcs_index = 0;
-    
+
     for (pos, word) in transformed_words.iter().enumerate() {
         if lcs_index < lcs.len() && *word == lcs[lcs_index] {
             // Word is unchanged
@@ -195,11 +197,17 @@ pub fn compute_word_diff(original: &str, transformed: &str) -> TextDiff {
             });
         }
     }
-    
+
     // Count additions and removals
-    let added_count = transformed_diff.iter().filter(|d| d.change_type == "added").count();
-    let removed_count = original_diff.iter().filter(|d| d.change_type == "removed").count();
-    
+    let added_count = transformed_diff
+        .iter()
+        .filter(|d| d.change_type == "added")
+        .count();
+    let removed_count = original_diff
+        .iter()
+        .filter(|d| d.change_type == "removed")
+        .count();
+
     TextDiff {
         original_diff,
         transformed_diff,
@@ -212,38 +220,38 @@ pub fn compute_word_diff(original: &str, transformed: &str) -> TextDiff {
 fn compute_lcs(a: &[String], b: &[String]) -> Vec<String> {
     let m = a.len();
     let n = b.len();
-    
+
     // Create DP table
     let mut dp = vec![vec![0; n + 1]; m + 1];
-    
+
     // Fill DP table
     for i in 1..=m {
         for j in 1..=n {
-            if a[i-1] == b[j-1] {
-                dp[i][j] = dp[i-1][j-1] + 1;
+            if a[i - 1] == b[j - 1] {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
             } else {
-                dp[i][j] = dp[i-1][j].max(dp[i][j-1]);
+                dp[i][j] = dp[i - 1][j].max(dp[i][j - 1]);
             }
         }
     }
-    
+
     // Backtrack to find LCS
     let mut lcs = Vec::new();
     let mut i = m;
     let mut j = n;
-    
+
     while i > 0 && j > 0 {
-        if a[i-1] == b[j-1] {
-            lcs.push(a[i-1].clone());
+        if a[i - 1] == b[j - 1] {
+            lcs.push(a[i - 1].clone());
             i -= 1;
             j -= 1;
-        } else if dp[i-1][j] > dp[i][j-1] {
+        } else if dp[i - 1][j] > dp[i][j - 1] {
             i -= 1;
         } else {
             j -= 1;
         }
     }
-    
+
     lcs.reverse();
     lcs
 }
@@ -253,41 +261,41 @@ pub fn count_sentences(text: &str) -> usize {
     if text.trim().is_empty() {
         return 0;
     }
-    
+
     // Define sentence-ending punctuation for different languages
     // Including both half-width and full-width (Chinese/Japanese) punctuation
     let sentence_endings = [
-        '.', '!', '?',          // English half-width
-        '。', '！', '？',        // Chinese/Japanese full-width
-        '…', '⋯',               // Ellipsis
-        '‼', '⁇', '⁈', '⁉',    // Special punctuation
+        '.', '!', '?', // English half-width
+        '。', '！', '？', // Chinese/Japanese full-width
+        '…', '⋯', // Ellipsis
+        '‼', '⁇', '⁈', '⁉', // Special punctuation
     ];
-    
+
     let mut sentence_count = 0;
     let chars: Vec<char> = text.chars().collect();
-    
+
     for (i, &ch) in chars.iter().enumerate() {
         if sentence_endings.contains(&ch) {
             sentence_count += 1;
-            
+
             // Handle multiple consecutive punctuation (like "..." or "!!!")
             // Skip the rest of consecutive similar punctuation
             let mut j = i + 1;
-            while j < chars.len() && (
-                chars[j] == ch || 
-                chars[j].is_whitespace() ||
-                sentence_endings.contains(&chars[j])
-            ) {
+            while j < chars.len()
+                && (chars[j] == ch
+                    || chars[j].is_whitespace()
+                    || sentence_endings.contains(&chars[j]))
+            {
                 j += 1;
             }
         }
     }
-    
+
     // If no sentence-ending punctuation found but text exists, count as 1 sentence
     if sentence_count == 0 && !text.trim().is_empty() {
         sentence_count = 1;
     }
-    
+
     sentence_count
 }
 
@@ -299,12 +307,12 @@ pub fn add_transformation_to_history(
     transformed: String,
 ) -> Result<(), String> {
     let mut history = TransformationHistory::load();
-    
+
     // Calculate diff data immediately
     let diff = compute_word_diff(&original, &transformed);
     let word_count = diff.added_count + diff.removed_count;
     let sentence_count = count_sentences(&transformed);
-    
+
     let entry = TransformationEntry {
         tone_name,
         original_text: original,
@@ -315,15 +323,17 @@ pub fn add_transformation_to_history(
         added_count: diff.added_count,
         removed_count: diff.removed_count,
     };
-    
+
     history.add_entry(entry);
     history.save()?;
-    
+
     Ok(())
 }
 
 #[tauri::command]
-pub fn get_transformation_history(limit: Option<usize>) -> Result<Vec<TransformationEntry>, String> {
+pub fn get_transformation_history(
+    limit: Option<usize>,
+) -> Result<Vec<TransformationEntry>, String> {
     let history = TransformationHistory::load();
     let limit = limit.unwrap_or(50);
     Ok(history.get_recent_entries(limit).to_vec())
@@ -339,34 +349,38 @@ pub fn clear_transformation_history() -> Result<(), String> {
 #[tauri::command]
 pub fn delete_transformation_entry(index: usize) -> Result<(), String> {
     let mut history = TransformationHistory::load();
-    
+
     if index >= history.entries.len() {
         return Err("Entry index out of bounds".to_string());
     }
-    
+
     // Remove the entry
     let removed_entry = history.entries.remove(index);
-    
+
     // Update daily stats
     let date_key = removed_entry.timestamp.format("%Y-%m-%d").to_string();
     if let Some(day_stats) = history.daily_stats.get_mut(&date_key) {
         day_stats.transformation_count = day_stats.transformation_count.saturating_sub(1);
-        day_stats.word_count = day_stats.word_count.saturating_sub(removed_entry.word_count);
-        day_stats.sentence_count = day_stats.sentence_count.saturating_sub(removed_entry.sentence_count);
-        
+        day_stats.word_count = day_stats
+            .word_count
+            .saturating_sub(removed_entry.word_count);
+        day_stats.sentence_count = day_stats
+            .sentence_count
+            .saturating_sub(removed_entry.sentence_count);
+
         // Remove the day stats if no transformations left for that day
         if day_stats.transformation_count == 0 {
             history.daily_stats.remove(&date_key);
         }
     }
-    
+
     history.save()
 }
 
 #[tauri::command]
 pub fn get_usage_stats() -> Result<serde_json::Value, String> {
     let history = TransformationHistory::load();
-    
+
     Ok(serde_json::json!({
         "total_transformations": history.get_total_transformations(),
         "total_words_transformed": history.get_total_words_transformed(),
@@ -379,16 +393,18 @@ pub fn get_usage_stats() -> Result<serde_json::Value, String> {
 pub fn get_daily_stats(days: Option<usize>) -> Result<Vec<DayStats>, String> {
     let history = TransformationHistory::load();
     let days = days.unwrap_or(7); // Default to 7 days
-    
+
     let today = Utc::now().date_naive();
     let mut stats = Vec::new();
-    
+
     // Generate stats for the last N days
     for i in 0..days {
         let date = today - chrono::Duration::days(i as i64);
         let date_key = date.format("%Y-%m-%d").to_string();
-        
-        let day_stats = history.daily_stats.get(&date_key)
+
+        let day_stats = history
+            .daily_stats
+            .get(&date_key)
             .cloned()
             .unwrap_or(DayStats {
                 date,
@@ -396,10 +412,10 @@ pub fn get_daily_stats(days: Option<usize>) -> Result<Vec<DayStats>, String> {
                 word_count: 0,
                 sentence_count: 0,
             });
-        
+
         stats.push(day_stats);
     }
-    
+
     // Reverse to get chronological order (oldest first)
     stats.reverse();
     Ok(stats)
@@ -427,7 +443,7 @@ mod tests {
             added_count: 0,
             removed_count: 0,
         };
-        
+
         assert_eq!(entry.tone_name, "Improve Writing");
         assert_eq!(entry.word_count, 3);
     }
@@ -435,9 +451,9 @@ mod tests {
     #[test]
     fn test_history_add_entry() {
         cleanup_test_files();
-        
+
         let mut history = TransformationHistory::default();
-        
+
         let entry = TransformationEntry {
             tone_name: "Test Tone".to_string(),
             original_text: "original".to_string(),
@@ -448,30 +464,30 @@ mod tests {
             added_count: 0,
             removed_count: 0,
         };
-        
+
         history.add_entry(entry);
-        
+
         assert_eq!(history.entries.len(), 1);
         assert_eq!(history.get_total_transformations(), 1);
         assert_eq!(history.get_total_words_transformed(), 1);
-        
+
         // Check daily stats
         let date_key = "2024-01-15";
         assert!(history.daily_stats.contains_key(date_key));
         let day_stats = &history.daily_stats[date_key];
         assert_eq!(day_stats.transformation_count, 1);
         assert_eq!(day_stats.word_count, 1);
-        
+
         cleanup_test_files();
     }
 
     #[test]
     fn test_history_multiple_entries_same_day() {
         cleanup_test_files();
-        
+
         let mut history = TransformationHistory::default();
         let test_date = Utc.with_ymd_and_hms(2024, 1, 15, 12, 0, 0).unwrap();
-        
+
         // Add first entry
         let entry1 = TransformationEntry {
             tone_name: "Tone 1".to_string(),
@@ -484,7 +500,7 @@ mod tests {
             removed_count: 0,
         };
         history.add_entry(entry1);
-        
+
         // Add second entry same day
         let entry2 = TransformationEntry {
             tone_name: "Tone 2".to_string(),
@@ -497,27 +513,27 @@ mod tests {
             removed_count: 0,
         };
         history.add_entry(entry2);
-        
+
         assert_eq!(history.entries.len(), 2);
         assert_eq!(history.get_total_transformations(), 2);
         assert_eq!(history.get_total_words_transformed(), 5);
-        
+
         // Check daily stats aggregation
         let date_key = "2024-01-15";
         let day_stats = &history.daily_stats[date_key];
         assert_eq!(day_stats.transformation_count, 2);
         assert_eq!(day_stats.word_count, 5);
-        
+
         cleanup_test_files();
     }
 
     #[test]
     fn test_history_max_entries_limit() {
         cleanup_test_files();
-        
+
         let mut history = TransformationHistory::default();
         history.max_entries = Some(3);
-        
+
         // Add 5 entries
         for i in 0..5 {
             let entry = TransformationEntry {
@@ -532,24 +548,24 @@ mod tests {
             };
             history.add_entry(entry);
         }
-        
+
         // Should only keep 3 entries (most recent)
         assert_eq!(history.entries.len(), 3);
-        
+
         // Check that most recent entries are kept
         assert_eq!(history.entries[0].tone_name, "Tone 4");
         assert_eq!(history.entries[1].tone_name, "Tone 3");
         assert_eq!(history.entries[2].tone_name, "Tone 2");
-        
+
         cleanup_test_files();
     }
 
     #[test]
     fn test_get_recent_entries() {
         cleanup_test_files();
-        
+
         let mut history = TransformationHistory::default();
-        
+
         // Add some entries
         for i in 0..5 {
             let entry = TransformationEntry {
@@ -564,20 +580,20 @@ mod tests {
             };
             history.add_entry(entry);
         }
-        
+
         let recent = history.get_recent_entries(3);
         assert_eq!(recent.len(), 3);
         assert_eq!(recent[0].tone_name, "Tone 4"); // Most recent first
-        
+
         cleanup_test_files();
     }
 
     #[test]
     fn test_clear_history() {
         cleanup_test_files();
-        
+
         let mut history = TransformationHistory::default();
-        
+
         // Add an entry
         let entry = TransformationEntry {
             tone_name: "Test".to_string(),
@@ -590,30 +606,30 @@ mod tests {
             removed_count: 0,
         };
         history.add_entry(entry);
-        
+
         assert_eq!(history.entries.len(), 1);
         assert_eq!(history.daily_stats.len(), 1);
-        
+
         history.clear_history();
-        
+
         assert_eq!(history.entries.len(), 0);
         assert_eq!(history.daily_stats.len(), 0);
         assert_eq!(history.get_total_transformations(), 0);
         assert_eq!(history.get_total_words_transformed(), 0);
-        
+
         cleanup_test_files();
     }
 
     #[test]
     fn test_daily_stats_generation() {
         cleanup_test_files();
-        
+
         let mut history = TransformationHistory::default();
-        
+
         // Add entries on different days
         let day1 = Utc.with_ymd_and_hms(2024, 1, 15, 12, 0, 0).unwrap();
         let day2 = Utc.with_ymd_and_hms(2024, 1, 16, 12, 0, 0).unwrap();
-        
+
         let entry1 = TransformationEntry {
             tone_name: "Day 1".to_string(),
             original_text: "text".to_string(),
@@ -625,7 +641,7 @@ mod tests {
             removed_count: 0,
         };
         history.add_entry(entry1);
-        
+
         let entry2 = TransformationEntry {
             tone_name: "Day 2".to_string(),
             original_text: "text".to_string(),
@@ -637,24 +653,24 @@ mod tests {
             removed_count: 0,
         };
         history.add_entry(entry2);
-        
+
         assert_eq!(history.daily_stats.len(), 2);
-        
+
         let day1_stats = &history.daily_stats["2024-01-15"];
         assert_eq!(day1_stats.transformation_count, 1);
         assert_eq!(day1_stats.word_count, 3);
-        
+
         let day2_stats = &history.daily_stats["2024-01-16"];
         assert_eq!(day2_stats.transformation_count, 1);
         assert_eq!(day2_stats.word_count, 2);
-        
+
         cleanup_test_files();
     }
 
     #[test]
     fn test_save_and_load() {
         cleanup_test_files();
-        
+
         // Create and save history
         let mut history = TransformationHistory::default();
         let entry = TransformationEntry {
@@ -668,17 +684,17 @@ mod tests {
             removed_count: 0,
         };
         history.add_entry(entry);
-        
+
         // Save to file
         history.save().expect("Failed to save history");
-        
+
         // Load from file
         let loaded_history = TransformationHistory::load();
-        
+
         assert_eq!(loaded_history.entries.len(), 1);
         assert_eq!(loaded_history.entries[0].tone_name, "Test Save");
         assert_eq!(loaded_history.daily_stats.len(), 1);
-        
+
         cleanup_test_files();
     }
 
@@ -688,23 +704,28 @@ mod tests {
         let original = "I am a very tall guy.";
         let transformed = "I'm very tall.";
         let diff = compute_word_diff(original, transformed);
-        
-        println!("Diff result: added={}, removed={}", diff.added_count, diff.removed_count);
-        
+
+        println!(
+            "Diff result: added={}, removed={}",
+            diff.added_count, diff.removed_count
+        );
+
         // Should have: removed "am", "a", "guy." and added "I'm"
         assert_eq!(diff.added_count, 1); // "I'm"
         assert_eq!(diff.removed_count, 4); // "I", "am", "a", "guy."
-        
+
         // Check that "I'm" is marked as added
-        let added_words: Vec<&str> = diff.transformed_diff
+        let added_words: Vec<&str> = diff
+            .transformed_diff
             .iter()
             .filter(|w| w.change_type == "added")
             .map(|w| w.word.as_str())
             .collect();
         assert!(added_words.contains(&"I'm"));
-        
+
         // Check that removed words are marked correctly
-        let removed_words: Vec<&str> = diff.original_diff
+        let removed_words: Vec<&str> = diff
+            .original_diff
             .iter()
             .filter(|w| w.change_type == "removed")
             .map(|w| w.word.as_str())
@@ -720,7 +741,7 @@ mod tests {
         let original = "Hello world";
         let transformed = "Hello beautiful wonderful world";
         let diff = compute_word_diff(original, transformed);
-        
+
         assert_eq!(diff.added_count, 2); // "beautiful", "wonderful"
         assert_eq!(diff.removed_count, 0);
     }
@@ -730,7 +751,7 @@ mod tests {
         let original = "Hello beautiful wonderful world";
         let transformed = "Hello world";
         let diff = compute_word_diff(original, transformed);
-        
+
         assert_eq!(diff.added_count, 0);
         assert_eq!(diff.removed_count, 2); // "beautiful", "wonderful"
     }
@@ -740,7 +761,7 @@ mod tests {
         let original = "Hello world";
         let transformed = "Hello world";
         let diff = compute_word_diff(original, transformed);
-        
+
         assert_eq!(diff.added_count, 0);
         assert_eq!(diff.removed_count, 0);
     }
@@ -750,8 +771,11 @@ mod tests {
         let original = "我是一个学生";
         let transformed = "我是一个好学生";
         let diff = compute_word_diff(original, transformed);
-        
-        println!("Chinese diff: added={}, removed={}", diff.added_count, diff.removed_count);
+
+        println!(
+            "Chinese diff: added={}, removed={}",
+            diff.added_count, diff.removed_count
+        );
         assert_eq!(diff.added_count, 1); // "好"
         assert_eq!(diff.removed_count, 0);
     }
@@ -762,14 +786,14 @@ mod tests {
         assert_eq!(count_sentences("Hello world."), 1);
         assert_eq!(count_sentences("Hello world. How are you?"), 2);
         assert_eq!(count_sentences("Hello world! How are you? Fine."), 3);
-        
+
         // Multiple punctuation
         assert_eq!(count_sentences("Hello world!!! How are you???"), 2);
         assert_eq!(count_sentences("Hello world... How are you."), 2);
-        
+
         // No punctuation (should count as 1)
         assert_eq!(count_sentences("Hello world"), 1);
-        
+
         // Empty string
         assert_eq!(count_sentences(""), 0);
         assert_eq!(count_sentences("   "), 0);
@@ -781,10 +805,10 @@ mod tests {
         assert_eq!(count_sentences("你好世界。"), 1);
         assert_eq!(count_sentences("你好世界。你好吗？"), 2);
         assert_eq!(count_sentences("你好世界！你好吗？很好。"), 3);
-        
+
         // Mixed punctuation
         assert_eq!(count_sentences("Hello世界。你好吗?"), 2);
-        
+
         // No punctuation (should count as 1)
         assert_eq!(count_sentences("你好世界"), 1);
     }
@@ -804,4 +828,4 @@ mod tests {
         assert_eq!(count_sentences("Really⁉ Yes‼"), 2);
         assert_eq!(count_sentences("Hello⋯ World？"), 2);
     }
-} 
+}

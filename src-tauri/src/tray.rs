@@ -1,14 +1,12 @@
 use tauri::{
-    App, AppHandle,
     menu::MenuBuilder,
     tray::{TrayIcon, TrayIconBuilder},
-    Manager,
+    App, AppHandle, Manager,
 };
-use tauri_plugin_notification::NotificationExt;
 
+use crate::core;
 #[cfg(target_os = "macos")]
 use crate::system;
-use crate::core;
 use tauri::Emitter;
 
 pub fn create_tray_menu(app: &App) -> Result<TrayIcon, tauri::Error> {
@@ -59,18 +57,20 @@ fn handle_menu_event(app: &AppHandle, event: tauri::menu::MenuEvent) {
                 println!("Starting transformation...");
                 let app_handle = app.clone();
                 tauri::async_runtime::spawn(async move {
-                    if let Err(e) = core::transform_clip_with_setting(app_handle.clone(), false).await {
+                    if let Err(e) =
+                        core::transform_clip_with_setting(app_handle.clone(), false).await
+                    {
                         println!("Transform error: {}", e);
 
                         // Show notification for rate limit errors
                         if e.contains("rate limit") || e.contains("Rate limit") {
                             let notification_handle = app_handle.clone();
                             tokio::spawn(async move {
-                                let _ = notification_handle.notification()
-                                    .builder()
-                                    .title("Milo - Rate Limited")
-                                    .body("Not enough API balance! Please top up your account and try again.")
-                                    .show();
+                                crate::notifications::show_notification(
+                                    &notification_handle,
+                                    "Milo - Rate Limited",
+                                    "Not enough API balance! Please top up your account and try again.",
+                                );
                             });
                         }
                     }
@@ -89,26 +89,26 @@ fn show_window_and_navigate(app: &AppHandle, section: &str) {
     if let Some(window) = app.get_webview_window("main") {
         // Show window first
         let _ = window.show();
-        
+
         #[cfg(target_os = "macos")]
         {
             use tauri::UserAttentionType;
             let _ = system::move_window_to_active_space(&window);
-            
+
             // Request user attention to draw focus
             let _ = window.request_user_attention(Some(UserAttentionType::Critical));
         }
-        
+
         // Multiple focus attempts with increasing delays for desktop switching
         std::thread::sleep(std::time::Duration::from_millis(200));
         let _ = window.set_focus();
-        
+
         std::thread::sleep(std::time::Duration::from_millis(100));
         let _ = window.set_focus();
-        
+
         // Navigate to the specific section by emitting an event to all windows
         let _ = app.emit("navigate-to-section", section);
-        
+
         // Final focus attempt
         std::thread::sleep(std::time::Duration::from_millis(100));
         let _ = window.set_focus();

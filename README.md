@@ -10,10 +10,6 @@ Milo is a lightweight desktop application that helps you transform text using AI
 
 - 🎯 **Instant transformations** - Transform clipboard text with global shortcuts
 - 🎨 **Custom tones** - Create personalized transformation prompts
-- 📊 **Usage tracking** - Monitor your transformations and word counts
-- 🔄 **Auto-updates** - Seamless updates with built-in update system
-- 🌙 **Dark mode** - Beautiful light and dark themes
-- ⚡ **Lightweight** - Fast, native desktop app built with Tauri
 
 ## 🚀 Quick Start
 
@@ -25,7 +21,7 @@ Milo is a lightweight desktop application that helps you transform text using AI
 
 ### Setup
 
-1. **Get a usage key** from the [official Milo website](https://milo-ai.com)
+1. **Get a usage key** from the [official Milo website](https://milomilo.work)
 2. **Open Milo settings** from the system tray
 3. **Enter your usage key** in the settings
 4. **Start transforming!** Copy text and use the shortcut (default: `Cmd+M`)
@@ -34,8 +30,7 @@ Milo is a lightweight desktop application that helps you transform text using AI
 
 1. **Copy any text** you want to transform
 2. **Press your shortcut** (default: `Cmd+M`)
-3. **Your transformed text** replaces the clipboard content
-4. **Paste anywhere** - the improved text is ready to use!
+3. **Paste anywhere** - the improved text is ready to use!
 
 ## ⚙️ Configuration
 
@@ -44,15 +39,6 @@ Milo is a lightweight desktop application that helps you transform text using AI
 - **Usage tracking** - View your transformation history and statistics
 - **Auto-updates** - Enable automatic app updates
 
-# Releasing
-
-## 🔐 Important: Back Up Your Signing Key
-
-**For developers building from source:**
-
-Your Tauri signing key is located at `~/.tauri/milo.key`. **CRITICAL:** Back this up securely!
-
----
 
 ## 🛠️ Development
 
@@ -61,7 +47,6 @@ Your Tauri signing key is located at `~/.tauri/milo.key`. **CRITICAL:** Back thi
 - Node.js (v16 or later)
 - pnpm (latest version)
 - Rust (latest stable)
-- Milo usage key (for testing)
 
 ### Tech Stack
 
@@ -89,21 +74,6 @@ Your Tauri signing key is located at `~/.tauri/milo.key`. **CRITICAL:** Back thi
    pnpm run tauri build
    ```
 
-### 🚀 Release Process
-
-See [`RELEASE.md`](RELEASE.md) for complete release instructions.
-
-### 📁 Project Structure
-
-```
-milo/
-├── src/                    # React frontend
-├── src-tauri/             # Rust backend
-├── scripts/               # Release automation
-├── public/                # Static assets
-└── dist/                  # Built frontend
-```
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -121,5 +91,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Built with [Tauri](https://tauri.app)
-- AI powered by [OpenAI](https://openai.com)
-- Icons by [Heroicons](https://heroicons.com)

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { open } from '@tauri-apps/plugin-shell';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { CONFIG } from '../config';
 
 interface DayStats {
   date: string;
@@ -29,7 +31,7 @@ export function Dashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
+
       const [statsData, usageData] = await Promise.all([
         invoke<DayStats[]>('get_daily_stats', { days: selectedPeriod }),
         invoke<UsageStats>('get_usage_stats')
@@ -41,6 +43,14 @@ export function Dashboard() {
       console.error('Failed to load dashboard data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openWebsite = async () => {
+    try {
+      await open(CONFIG.website_url);
+    } catch (error) {
+      console.error('Failed to open website:', error);
     }
   };
 
@@ -69,20 +79,42 @@ export function Dashboard() {
 
       {/* Usage Stats */}
       {usageStats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-background-secondary p-6 rounded-lg border border-border-primary relative flex flex-col h-32">
-            <div className="text-3xl text-accent-primary mb-1">{usageStats.total_transformations}</div>
-            <div className="text-sm text-text-tertiary mt-auto mb-2">Transformations</div>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-background-secondary p-6 rounded-lg border border-border-primary relative flex flex-col h-32">
+              <div className="text-3xl text-accent-primary mb-1">{usageStats.total_transformations}</div>
+              <div className="text-sm text-text-tertiary mt-auto mb-2">Transformations</div>
+            </div>
+
+            <div className="bg-background-secondary p-6 rounded-lg border border-border-primary relative flex flex-col h-32">
+              <div className="text-3xl text-text-secondary mb-1">{usageStats.total_words_transformed}</div>
+              <div className="text-sm text-text-tertiary mt-auto mb-2">Words</div>
+            </div>
+
+            <div className="bg-background-secondary p-6 rounded-lg border border-border-primary relative flex flex-col h-32">
+              <div className="text-3xl text-text-secondary mb-1">{usageStats.total_sentences_transformed}</div>
+              <div className="text-sm text-text-tertiary mt-auto mb-2">Sentences</div>
+            </div>
           </div>
 
-          <div className="bg-background-secondary p-6 rounded-lg border border-border-primary relative flex flex-col h-32">
-            <div className="text-3xl text-text-secondary mb-1">{usageStats.total_words_transformed}</div>
-            <div className="text-sm text-text-tertiary mt-auto mb-2">Words</div>
-          </div>
-
-          <div className="bg-background-secondary p-6 rounded-lg border border-border-primary relative flex flex-col h-32">
-            <div className="text-3xl text-text-secondary mb-1">{usageStats.total_sentences_transformed}</div>
-            <div className="text-sm text-text-tertiary mt-auto mb-2">Sentences</div>
+          {/* Usage and Credit Balance Hint */}
+          <div className="bg-background-tertiary p-4 rounded-lg border border-border-primary">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-text-secondary">
+                  To see your usage details and credit balance, visit our website
+                </p>
+              </div>
+              <button
+                onClick={openWebsite}
+                className="inline-flex items-center px-3 py-2 text-sm bg-accent-primary text-white rounded-lg hover:bg-accent-secondary transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Visit Website
+              </button>
+            </div>
           </div>
         </div>
       )}
