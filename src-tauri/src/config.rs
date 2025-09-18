@@ -17,7 +17,7 @@ impl AppConfig {
     fn default() -> Self {
         Self {
             litellm_base_url: "https://milo-litellm.up.railway.app".to_string(),
-            website_url: "https://your-website.com/api-keys".to_string(),
+            website_url: "https://milomilo.work".to_string(),
             default_model: "gpt-4o-mini".to_string(),
         }
     }

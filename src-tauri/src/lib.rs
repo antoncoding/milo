@@ -24,6 +24,7 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new()
             .with_handler(|app, shortcut, event| {
                 println!("🎯 Shortcut handler triggered!");
@@ -80,6 +81,7 @@ pub fn run() {
             api::get_api_key,
             api::save_litellm_api_key,
             api::get_litellm_api_key,
+            api::get_usage_key_preview,
             api::save_settings,
             api::get_settings,
             api::show_settings,

@@ -1,5 +1,4 @@
 use tauri::Manager;
-use tauri_plugin_notification::NotificationExt;
 use arboard::Clipboard;
 
 use crate::transform::transform_text;

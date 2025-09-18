@@ -74,14 +74,14 @@ export function Dashboard() {
             <div className="text-3xl text-accent-primary mb-1">{usageStats.total_transformations}</div>
             <div className="text-sm text-text-tertiary mt-auto mb-2">Transformations</div>
           </div>
-          
+
           <div className="bg-background-secondary p-6 rounded-lg border border-border-primary relative flex flex-col h-32">
-            <div className="text-3xl text-green-600 mb-1">{usageStats.total_words_transformed}</div>
+            <div className="text-3xl text-text-secondary mb-1">{usageStats.total_words_transformed}</div>
             <div className="text-sm text-text-tertiary mt-auto mb-2">Words</div>
           </div>
-          
+
           <div className="bg-background-secondary p-6 rounded-lg border border-border-primary relative flex flex-col h-32">
-            <div className="text-3xl text-purple-600 mb-1">{usageStats.total_sentences_transformed}</div>
+            <div className="text-3xl text-text-secondary mb-1">{usageStats.total_sentences_transformed}</div>
             <div className="text-sm text-text-tertiary mt-auto mb-2">Sentences</div>
           </div>
         </div>

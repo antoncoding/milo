@@ -23,6 +23,26 @@ pub async fn get_litellm_api_key() -> Result<String, String> {
     fs::read_to_string(litellm_api_key_file_path()).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+pub async fn get_usage_key_preview() -> Result<String, String> {
+    match fs::read_to_string(litellm_api_key_file_path()) {
+        Ok(key) => {
+            if key.is_empty() {
+                Ok("".to_string())
+            } else if key.len() <= 8 {
+                Ok("****".to_string())
+            } else {
+                let visible_chars = std::cmp::min(4, key.len() / 3);
+                let prefix = &key[..visible_chars];
+                let suffix_start = key.len() - visible_chars;
+                let suffix = &key[suffix_start..];
+                Ok(format!("{}****{}", prefix, suffix))
+            }
+        },
+        Err(_) => Ok("".to_string())
+    }
+}
+
 
 
 

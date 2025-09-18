@@ -135,13 +135,15 @@ function App() {
 
   return (
     <ThemeProvider>
-      <Sidebar 
-        activeSection={activeSection} 
-        onSectionChange={setActiveSection}
-      />
-      <div className="ml-14 min-h-screen">
-        <div className="mx-auto px-8 py-8 max-w-3xl">
-          {renderContent()}
+      <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+        <Sidebar
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
+        <div className="ml-14 flex-1">
+          <div className="mx-auto px-8 py-8 max-w-3xl">
+            {renderContent()}
+          </div>
         </div>
       </div>
     </ThemeProvider>

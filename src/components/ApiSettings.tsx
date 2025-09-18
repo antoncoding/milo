@@ -20,8 +20,9 @@ interface Settings {
 
 
 export function Settings() {
-  const [apiKey, setApiKey] = useState("");
-  const [litellmApiKey, setLitellmApiKey] = useState("");
+  const [usageKey, setUsageKey] = useState("");
+  const [usageKeyPreview, setUsageKeyPreview] = useState("");
+  const [hasKey, setHasKey] = useState(false);
   const [settings, setSettings] = useState<Settings>({
     openai_model: "",
     custom_prompts: {},
@@ -32,6 +33,7 @@ export function Settings() {
   const [shortcutEnabled, setShortcutEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -41,18 +43,19 @@ export function Settings() {
     try {
       setLoading(true);
 
-      // Load API keys
-      const savedApiKey = await invoke<string>('get_api_key');
-      setApiKey(savedApiKey || '');
+      // Load usage key
+      const savedUsageKey = await invoke<string>('get_litellm_api_key');
+      setUsageKey(savedUsageKey || '');
 
-      const savedLitellmApiKey = await invoke<string>('get_litellm_api_key');
-      setLitellmApiKey(savedLitellmApiKey || '');
-      
+      const keyPreview = await invoke<string>('get_usage_key_preview');
+      setUsageKeyPreview(keyPreview || '');
+      setHasKey(!!keyPreview);
+
       // Load general settings
       const savedSettings = await invoke<Settings>("get_settings");
       setSettings(savedSettings);
       setShortcutEnabled(savedSettings.shortcutEnabled ?? true);
-      
+
       // Load current shortcut
       const currentShortcut = await invoke<string>("get_current_shortcut");
       const parsedShortcut = backendFormatToShortcut(currentShortcut);
@@ -64,16 +67,34 @@ export function Settings() {
     }
   };
 
-  const saveLitellmApiKey = async () => {
+  const saveUsageKey = async () => {
     try {
       setSaving(true);
-      await invoke('save_litellm_api_key', { key: litellmApiKey });
-      await message('LiteLLM API key saved successfully!', { title: 'Success', kind: 'info' });
+      await invoke('save_litellm_api_key', { key: usageKey });
+
+      // Update the preview after saving
+      const keyPreview = await invoke<string>('get_usage_key_preview');
+      setUsageKeyPreview(keyPreview || '');
+      setHasKey(!!keyPreview);
+
+      await message('Usage key saved successfully!', { title: 'Success', kind: 'info' });
     } catch (error) {
-      console.error('Failed to save LiteLLM API key:', error);
-      await message('Failed to save API key. Please try again.', { title: 'Error', kind: 'error' });
+      console.error('Failed to save usage key:', error);
+      await message('Failed to save usage key. Please try again.', { title: 'Error', kind: 'error' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const copyKeyToClipboard = async () => {
+    if (usageKey) {
+      try {
+        await navigator.clipboard.writeText(usageKey);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (error) {
+        console.error('Failed to copy to clipboard:', error);
+      }
     }
   };
 
@@ -195,66 +216,98 @@ export function Settings() {
         <p className="text-text-secondary mt-1">Configure your Milo preferences</p>
       </div>
 
-      {/* API Key Section */}
+      {/* Usage Key Section */}
       <div className="bg-background-secondary p-6 rounded-lg border border-border-primary">
         <div className="mb-4">
-          <h2 className="text-lg text-text-primary">Milo API Configuration</h2>
-          <p className="text-sm text-text-secondary">Configure your Milo API key for text transformations</p>
+          <h2 className="text-lg text-text-primary">Usage Key</h2>
+          <p className="text-sm text-text-secondary">Your key for accessing text transformations</p>
         </div>
 
         <div className="space-y-4">
-          {/* Instructions */}
-          <div className="bg-accent-primary/10 border border-accent-primary/30 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-5 h-5 mt-0.5">
-                <svg className="w-5 h-5 text-accent-primary" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
+          {!hasKey ? (
+            /* No Key State */
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
+                <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                Not Ready
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-medium text-text-primary mb-1">
-                  Get your API key from our website
-                </h3>
-                <p className="text-xs text-text-secondary mb-3">
-                  You need a Milo API key from our website to use text transformations. This connects to our LiteLLM proxy server.
+
+              <div className="bg-accent-primary/10 border border-accent-primary/30 rounded-lg p-4">
+                <p className="text-sm text-text-primary mb-3">
+                  You need a usage key to transform text with Milo.
                 </p>
                 <button
                   onClick={openWebsite}
-                  className="inline-flex items-center px-3 py-1.5 text-xs bg-accent-primary text-white rounded hover:bg-accent-primary/90 transition-colors"
+                  className="inline-flex items-center px-4 py-2 bg-accent-primary text-white text-sm rounded-lg hover:bg-accent-secondary transition-colors"
                 >
-                  <svg className="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
-                  Get API Key
+                  Get Usage Key
+                </button>
+              </div>
+
+              <div>
+                <label htmlFor="usageKey" className="block text-sm text-text-primary mb-2">
+                  Enter your usage key
+                </label>
+                <input
+                  id="usageKey"
+                  type="password"
+                  value={usageKey}
+                  onChange={(e) => setUsageKey(e.target.value)}
+                  placeholder="milo-..."
+                  className="w-full px-3 py-2 border border-border-primary rounded-lg focus:ring-2 focus:ring-accent-primary focus:border-accent-primary bg-background-primary text-text-primary"
+                />
+                <button
+                  onClick={saveUsageKey}
+                  disabled={saving || !usageKey.trim()}
+                  className="mt-2 px-3 py-2 text-sm bg-accent-primary text-white rounded-lg hover:bg-accent-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? 'Saving...' : 'Save Key'}
                 </button>
               </div>
             </div>
-          </div>
+          ) : (
+            /* Has Key State */
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  Ready
+                </div>
+              </div>
 
-          <div>
-            <label htmlFor="litellmApiKey" className="block text-sm text-text-primary mb-2">
-              Milo API Key
-            </label>
-            <input
-              id="litellmApiKey"
-              type="password"
-              value={litellmApiKey}
-              onChange={(e) => setLitellmApiKey(e.target.value)}
-              placeholder="milo-..."
-              className="w-full px-3 py-2 border border-border-primary rounded-lg focus:ring-2 focus:ring-accent-primary focus:border-accent-primary bg-background-primary text-text-primary"
-            />
-            <p className="text-xs text-text-tertiary mt-1">
-              Your API key is stored securely on your device and never shared.
-            </p>
-          </div>
-
-          <button
-            onClick={saveLitellmApiKey}
-            disabled={saving || !litellmApiKey.trim()}
-            className="px-3 py-2 text-sm bg-background-tertiary text-text-secondary hover:bg-border-primary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {saving ? 'Saving...' : 'Save API Key'}
-          </button>
+              <div className="bg-background-tertiary p-3 rounded-lg border border-border-primary">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-text-secondary mb-1">Usage Key:</p>
+                    <p className="text-sm font-mono text-text-primary">{usageKeyPreview}</p>
+                  </div>
+                  <button
+                    onClick={copyKeyToClipboard}
+                    className="ml-3 px-3 py-1.5 text-xs bg-background-secondary border border-border-primary rounded hover:bg-background-tertiary transition-colors"
+                  >
+                    {copied ? (
+                      <span className="flex items-center text-green-600">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        Copied
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Copy
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
