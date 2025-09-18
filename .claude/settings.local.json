@@ -5,7 +5,8 @@
       "WebFetch(domain:v2.tauri.app)",
       "WebFetch(domain:thatgurjot.com)",
       "Bash(pnpm add:*)",
-      "Bash(pnpm tauri signer generate:*)"
+      "Bash(pnpm tauri signer generate:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []

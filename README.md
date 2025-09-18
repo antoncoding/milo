@@ -4,84 +4,111 @@
   <img src="public/icon.png" alt="Milo Logo" width="128" height="128">
 </div>
 
-Milo is a lightweight desktop application that helps you transform text using AI. It lives in your system tray and provides quick access to text transformation with customizable tones.
+Milo is a lightweight desktop application that helps you transform text using AI. Copy any text, hit a keyboard shortcut, and get instant AI transformations with customizable tones.
 
-## Features
+## ✨ Features
 
-- 🎯 Transform clipboard text with one click
-- 🎨 Customize transformation tones
-- 🔄 Quick access from system tray
-- ⚡ Fast and lightweight
+- 🎯 **Instant transformations** - Transform clipboard text with global shortcuts
+- 🎨 **Custom tones** - Create personalized transformation prompts
+- 📊 **Usage tracking** - Monitor your transformations and word counts
+- 🔄 **Auto-updates** - Seamless updates with built-in update system
+- 🌙 **Dark mode** - Beautiful light and dark themes
+- ⚡ **Lightweight** - Fast, native desktop app built with Tauri
 
-## Installation
+## 🚀 Quick Start
+
+### Download
+
+1. Visit the [Releases page](https://github.com/antoncoding/milo/releases)
+2. Download the latest version for your platform
+3. Install and launch Milo
+
+### Setup
+
+1. **Get a usage key** from the [official Milo website](https://milo-ai.com)
+2. **Open Milo settings** from the system tray
+3. **Enter your usage key** in the settings
+4. **Start transforming!** Copy text and use the shortcut (default: `Cmd+M`)
+
+## 🎯 How to Use
+
+1. **Copy any text** you want to transform
+2. **Press your shortcut** (default: `Cmd+M`)
+3. **Your transformed text** replaces the clipboard content
+4. **Paste anywhere** - the improved text is ready to use!
+
+## ⚙️ Configuration
+
+- **Custom shortcuts** - Set your preferred key combination
+- **Transform tones** - Create custom prompts for different writing styles
+- **Usage tracking** - View your transformation history and statistics
+- **Auto-updates** - Enable automatic app updates
+
+# Releasing
+
+## 🔐 Important: Back Up Your Signing Key
+
+**For developers building from source:**
+
+Your Tauri signing key is located at `~/.tauri/milo.key`. **CRITICAL:** Back this up securely!
+
+---
+
+## 🛠️ Development
 
 ### Prerequisites
 
 - Node.js (v16 or later)
 - pnpm (latest version)
 - Rust (latest stable)
-- OpenAI API key
-
-### Build from Source
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/milo.git
-cd milo
-```
-
-2. Install dependencies:
-```bash
-pnpm install
-```
-
-3. Build the application:
-```bash
-pnpm run tauri build
-```
-
-The built application will be available in `src-tauri/target/release`.
-
-## Usage
-
-1. Launch Milo - it will appear in your system tray
-2. Click the tray icon and select "Settings"
-3. Enter your OpenAI API key
-4. Copy any text you want to transform
-5. Click "Transform" from the tray menu
-6. The transformed text will be copied to your clipboard
-
-### Customizing Tones
-
-1. Open Settings from the tray menu
-2. Click "Add New Tone"
-3. Enter a name and prompt for your custom tone
-4. Select your tone before transforming text
-
-## Development
+- Milo usage key (for testing)
 
 ### Tech Stack
 
-- Frontend: React + Vite
-- Backend: Rust + Tauri
-- AI: OpenAI API
+- **Frontend**: React + Vite + TypeScript + Tailwind CSS
+- **Backend**: Rust + Tauri v2
+- **AI Integration**: LiteLLM proxy server
+- **Auto-updates**: Built-in Tauri updater with cryptographic signatures
 
-### Development Setup
+### Build from Source
 
-1. Install dependencies:
+1. **Clone and install**:
+   ```bash
+   git clone https://github.com/antoncoding/milo.git
+   cd milo
+   pnpm install
+   ```
+
+2. **Development server**:
+   ```bash
+   pnpm run tauri dev
+   ```
+
+3. **Production build**:
+   ```bash
+   pnpm run tauri build
+   ```
+
+### 🚀 Release Process
+
 ```bash
-pnpm install
+# Export signing key
+export TAURI_SIGNING_PRIVATE_KEY=$(cat ~/.tauri/milo.key)
+
+# Automated release
+pnpm release v0.1.9
 ```
 
-2. Start development server:
-```bash
-pnpm run tauri dev
+
+### 📁 Project Structure
+
 ```
-
-### Building for Production
-
-```bash
-pnpm run tauri build
+milo/
+├── src/                    # React frontend
+├── src-tauri/             # Rust backend
+├── scripts/               # Release automation
+├── public/                # Static assets
+└── dist/                  # Built frontend
 ```
 
 ## Contributing

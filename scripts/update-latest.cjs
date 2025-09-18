@@ -13,6 +13,7 @@ const { execSync } = require('child_process');
 // Configuration
 const REPO_OWNER = 'antoncoding';
 const REPO_NAME = 'milo';
+const BRANCH = 'master'; // Updated to match tauri.conf.json
 const GITHUB_RELEASES_BASE = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download`;
 
 // File paths

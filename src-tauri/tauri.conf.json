@@ -25,7 +25,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://raw.githubusercontent.com/antoncoding/milo/main/latest.json"
+        "https://raw.githubusercontent.com/antoncoding/milo/master/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVEN0Q0OEYzNDgyOTIxQUEKUldTcUlTbEk4MGg5N1VITktmZ3VBK2QrVzcrRzJYTmhSVTQ0ZjRvSVFxUGsvcmtEdHE0SXhKemIK"
     }
