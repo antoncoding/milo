@@ -1,15 +1,15 @@
 {
-  "version": "v0.1.14",
-  "notes": "Milo v0.1.14 - Bug fixes and improvements",
-  "pub_date": "2025-09-18T10:12:26.015Z",
+  "version": "v0.1.15",
+  "notes": "Milo v0.1.15 - Bug fixes and improvements",
+  "pub_date": "2025-09-18T11:46:44.040Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTcUlTbEk4MGg5N1JlYnlZcXJ0MjI0YmhUUHU2WDJjZXJNME1xa0dHU0tHbG5FYkdtL2w1YzdFVG95RE9YZGExYTRuOUlWVnpjVEY0S0pQN0Q5MDR3QnY0WjNJdG5JeFFjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzU4MTkwMzQ1CWZpbGU6TWlsby5hcHAudGFyLmd6CjdEQ3BaVzhlOHlQeWRVdnUxMmIzQVFMUnE0M3U2ZXZCMmlWWXkyR1dJNjk5NC9ML1p2VjBpMmN5NXBDNDM5ZkJyc1VvTUZmTG5xaW5jT2tQZzRuSUR3PT0K",
-      "url": "https://github.com/antoncoding/milo/releases/download/v0.1.14/Milo.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTcUlTbEk4MGg5N2ZPV3VuZ0dVTlJvZVdHU2svNkt5cDlBN09PMktTZ24vVEhqZExJc0p5dGVvMXZ1Ry9UNkVkajVmTDIrUUI1WU5xSDNTdENxdlpNTGV1Y2RRMk5FZ2dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzU4MTk2MDAzCWZpbGU6TWlsby5hcHAudGFyLmd6Cit0ZVJ1ZTlhTVB0OHZKeEh5RWRUU2NmOW5RUVQ4dWlxZ2Q1YmdJQzhlRWRxcjhpM09Mbi9vRFE4d00yRTZTRnd6MEMzT082Mi8vSnRDVUtOZHRXR0F3PT0K",
+      "url": "https://github.com/antoncoding/milo/releases/download/v0.1.15/Milo.app.tar.gz"
     },
     "darwin-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTcUlTbEk4MGg5N1JlYnlZcXJ0MjI0YmhUUHU2WDJjZXJNME1xa0dHU0tHbG5FYkdtL2w1YzdFVG95RE9YZGExYTRuOUlWVnpjVEY0S0pQN0Q5MDR3QnY0WjNJdG5JeFFjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzU4MTkwMzQ1CWZpbGU6TWlsby5hcHAudGFyLmd6CjdEQ3BaVzhlOHlQeWRVdnUxMmIzQVFMUnE0M3U2ZXZCMmlWWXkyR1dJNjk5NC9ML1p2VjBpMmN5NXBDNDM5ZkJyc1VvTUZmTG5xaW5jT2tQZzRuSUR3PT0K",
-      "url": "https://github.com/antoncoding/milo/releases/download/v0.1.14/Milo.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTcUlTbEk4MGg5N2ZPV3VuZ0dVTlJvZVdHU2svNkt5cDlBN09PMktTZ24vVEhqZExJc0p5dGVvMXZ1Ry9UNkVkajVmTDIrUUI1WU5xSDNTdENxdlpNTGV1Y2RRMk5FZ2dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzU4MTk2MDAzCWZpbGU6TWlsby5hcHAudGFyLmd6Cit0ZVJ1ZTlhTVB0OHZKeEh5RWRUU2NmOW5RUVQ4dWlxZ2Q1YmdJQzhlRWRxcjhpM09Mbi9vRFE4d00yRTZTRnd6MEMzT082Mi8vSnRDVUtOZHRXR0F3PT0K",
+      "url": "https://github.com/antoncoding/milo/releases/download/v0.1.15/Milo.app.tar.gz"
     }
   }
 }

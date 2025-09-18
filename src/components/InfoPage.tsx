@@ -68,7 +68,7 @@ export function InfoPage() {
       if (!update) {
         // Show a message that no updates are available
         console.log('No updates available');
-        setStatusMessage(currentVersion ? `Milo v${currentVersion} is up to date!` : 'Milo is up to date!');
+        setStatusMessage(currentVersion ? `Your Milo version v${currentVersion} is up to date!` : 'Milo is up to date!');
       } else {
         setStatusMessage(null);
       }
