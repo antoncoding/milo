@@ -27,6 +27,36 @@ VERSION_CLEAN=${VERSION#v} # Remove 'v' prefix
 
 echo -e "${BLUE}🚀 Starting release process for ${VERSION}${NC}"
 
+# Step 0: Check signing key setup
+echo -e "${YELLOW}🔐 Checking signing key setup...${NC}"
+
+KEY_PATH="$HOME/.tauri/milo.key"
+if [ ! -f "$KEY_PATH" ]; then
+    echo -e "${RED}❌ Signing key not found at ~/.tauri/milo.key${NC}"
+    echo -e "${YELLOW}🔧 To generate a new key:${NC}"
+    echo "pnpm tauri signer generate -w ~/.tauri/milo.key --password test123"
+    exit 1
+fi
+
+if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+    echo -e "${RED}❌ TAURI_SIGNING_PRIVATE_KEY not set${NC}"
+    echo -e "${YELLOW}🔧 To set the signing key:${NC}"
+    echo "export TAURI_SIGNING_PRIVATE_KEY=\$(cat ~/.tauri/milo.key)"
+    echo "export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=\"test123\""
+    echo ""
+    echo -e "${YELLOW}Or run this one-liner:${NC}"
+    echo "export TAURI_SIGNING_PRIVATE_KEY=\$(cat ~/.tauri/milo.key) && export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=\"test123\""
+    exit 1
+fi
+
+if [ -z "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" ]; then
+    echo -e "${RED}❌ TAURI_SIGNING_PRIVATE_KEY_PASSWORD not set${NC}"
+    echo "Run: export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=\"test123\""
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Signing key setup verified${NC}"
+
 # Step 1: Update version in files
 echo -e "${YELLOW}📝 Updating version files...${NC}"
 
@@ -40,6 +70,15 @@ if command -v jq &> /dev/null; then
 else
     # Fallback method without jq
     sed -i '' "s/\"version\": \".*\"/\"version\": \"${VERSION_CLEAN}\"/" package.json
+fi
+
+# Update tauri.conf.json
+if command -v jq &> /dev/null; then
+    tmp=$(mktemp)
+    jq ".version = \"${VERSION_CLEAN}\"" src-tauri/tauri.conf.json > "$tmp" && mv "$tmp" src-tauri/tauri.conf.json
+else
+    # Fallback method without jq
+    sed -i '' "s/\"version\": \".*\"/\"version\": \"${VERSION_CLEAN}\"/" src-tauri/tauri.conf.json
 fi
 
 echo -e "${GREEN}✅ Version files updated${NC}"

@@ -19,6 +19,7 @@ const GITHUB_RELEASES_BASE = `https://github.com/${REPO_OWNER}/${REPO_NAME}/rele
 // File paths
 const CARGO_TOML_PATH = path.join(__dirname, '..', 'src-tauri', 'Cargo.toml');
 const PACKAGE_JSON_PATH = path.join(__dirname, '..', 'package.json');
+const TAURI_CONF_PATH = path.join(__dirname, '..', 'src-tauri', 'tauri.conf.json');
 const LATEST_JSON_PATH = path.join(__dirname, '..', 'latest.json');
 
 function getCurrentVersion() {
@@ -40,7 +41,12 @@ function updateVersionFiles(version) {
   packageJson.version = version;
   fs.writeFileSync(PACKAGE_JSON_PATH, JSON.stringify(packageJson, null, 2) + '\n');
 
-  console.log('✅ Version files updated');
+  // Update tauri.conf.json
+  let tauriConf = JSON.parse(fs.readFileSync(TAURI_CONF_PATH, 'utf8'));
+  tauriConf.version = version;
+  fs.writeFileSync(TAURI_CONF_PATH, JSON.stringify(tauriConf, null, 2) + '\n');
+
+  console.log('✅ Version files updated (Cargo.toml, package.json, tauri.conf.json)');
 }
 
 function buildApp() {
@@ -67,14 +73,6 @@ function extractSignatures(version) {
   const bundleDir = path.join(__dirname, '..', 'src-tauri', 'target', 'release', 'bundle');
   const signatures = {};
 
-  // Common platform mappings
-  const platformMappings = {
-    'macos': {
-      'x86_64': 'darwin-x86_64',
-      'aarch64': 'darwin-aarch64'
-    }
-  };
-
   try {
     // Look for .sig files
     const findSigFiles = (dir) => {
@@ -86,32 +84,26 @@ function extractSignatures(version) {
 
     const sigFiles = findSigFiles(bundleDir);
 
-    for (const sigFile of sigFiles) {
-      const signature = fs.readFileSync(sigFile, 'utf8').trim();
-      const fileName = path.basename(sigFile, '.sig');
+    if (sigFiles.length > 0) {
+      // For now, we assume single architecture build (most common)
+      // and use the same .app.tar.gz file for both platform entries
+      const signature = fs.readFileSync(sigFiles[0], 'utf8').trim();
 
-      // Determine platform from filename
-      let platform = 'darwin-aarch64'; // default
-      if (fileName.includes('x64') || fileName.includes('x86_64')) {
-        platform = 'darwin-x86_64';
-      }
+      // Use the actual Tauri-generated filename
+      const downloadUrl = `${GITHUB_RELEASES_BASE}/v${version}/Milo.app.tar.gz`;
 
-      // Determine download URL based on file type
-      let downloadUrl;
-      if (fileName.includes('.app.tar.gz')) {
-        downloadUrl = `${GITHUB_RELEASES_BASE}/v${version}/${fileName}`;
-      } else if (fileName.includes('.dmg')) {
-        downloadUrl = `${GITHUB_RELEASES_BASE}/v${version}/${fileName}`;
-      } else {
-        // Fallback naming
-        const extension = platform === 'darwin-x86_64' ? 'x64.app.tar.gz' : 'aarch64.app.tar.gz';
-        downloadUrl = `${GITHUB_RELEASES_BASE}/v${version}/Milo_${extension}`;
-      }
-
-      signatures[platform] = {
+      // Add both architectures pointing to the same universal file
+      signatures['darwin-aarch64'] = {
         signature,
         url: downloadUrl
       };
+
+      signatures['darwin-x86_64'] = {
+        signature,
+        url: downloadUrl
+      };
+
+      console.log(`✅ Using signature from: ${path.basename(sigFiles[0])}`);
     }
 
     if (Object.keys(signatures).length === 0) {
@@ -119,11 +111,11 @@ function extractSignatures(version) {
       // Create template structure for manual completion
       signatures['darwin-aarch64'] = {
         signature: 'SIGNATURE_FROM_BUILD_PROCESS_AARCH64',
-        url: `${GITHUB_RELEASES_BASE}/v${version}/Milo_aarch64.app.tar.gz`
+        url: `${GITHUB_RELEASES_BASE}/v${version}/Milo.app.tar.gz`
       };
       signatures['darwin-x86_64'] = {
         signature: 'SIGNATURE_FROM_BUILD_PROCESS_X64',
-        url: `${GITHUB_RELEASES_BASE}/v${version}/Milo_x64.app.tar.gz`
+        url: `${GITHUB_RELEASES_BASE}/v${version}/Milo.app.tar.gz`
       };
     }
 
@@ -136,11 +128,11 @@ function extractSignatures(version) {
     return {
       'darwin-aarch64': {
         signature: 'SIGNATURE_FROM_BUILD_PROCESS_AARCH64',
-        url: `${GITHUB_RELEASES_BASE}/v${version}/Milo_aarch64.app.tar.gz`
+        url: `${GITHUB_RELEASES_BASE}/v${version}/Milo.app.tar.gz`
       },
       'darwin-x86_64': {
         signature: 'SIGNATURE_FROM_BUILD_PROCESS_X64',
-        url: `${GITHUB_RELEASES_BASE}/v${version}/Milo_x64.app.tar.gz`
+        url: `${GITHUB_RELEASES_BASE}/v${version}/Milo.app.tar.gz`
       }
     };
   }
@@ -178,6 +170,47 @@ function commitAndTag(version) {
   }
 }
 
+function checkSigningKey() {
+  console.log('🔐 Checking signing key setup...');
+
+  const keyPath = path.join(process.env.HOME, '.tauri', 'milo.key');
+  const envKey = process.env.TAURI_SIGNING_PRIVATE_KEY;
+  const envPassword = process.env.TAURI_SIGNING_PRIVATE_KEY_PASSWORD;
+
+  // Check if key file exists
+  if (!fs.existsSync(keyPath)) {
+    console.error('❌ Signing key not found at ~/.tauri/milo.key');
+    console.log('\n🔧 To generate a new key:');
+    console.log('pnpm tauri signer generate -w ~/.tauri/milo.key --password test123');
+    process.exit(1);
+  }
+
+  // Check if environment variables are set
+  if (!envKey && !envPassword) {
+    console.error('❌ Signing key environment variables not set');
+    console.log('\n🔧 To set the signing key:');
+    console.log('export TAURI_SIGNING_PRIVATE_KEY=$(cat ~/.tauri/milo.key)');
+    console.log('export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="test123"');
+    console.log('\nOr run this one-liner:');
+    console.log('export TAURI_SIGNING_PRIVATE_KEY=$(cat ~/.tauri/milo.key) && export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="test123"');
+    process.exit(1);
+  }
+
+  if (!envKey) {
+    console.error('❌ TAURI_SIGNING_PRIVATE_KEY not set');
+    console.log('Run: export TAURI_SIGNING_PRIVATE_KEY=$(cat ~/.tauri/milo.key)');
+    process.exit(1);
+  }
+
+  if (!envPassword) {
+    console.error('❌ TAURI_SIGNING_PRIVATE_KEY_PASSWORD not set');
+    console.log('Run: export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="test123"');
+    process.exit(1);
+  }
+
+  console.log('✅ Signing key setup verified');
+}
+
 function main() {
   const args = process.argv.slice(2);
   let targetVersion = args[0];
@@ -186,7 +219,7 @@ function main() {
     const currentVersion = getCurrentVersion();
     console.log(`Current version: ${currentVersion}`);
     console.log('Please provide a target version:');
-    console.log('Usage: node scripts/update-latest.js v0.1.9');
+    console.log('Usage: node scripts/update-latest.cjs v0.1.9');
     process.exit(1);
   }
 
@@ -194,6 +227,9 @@ function main() {
   targetVersion = targetVersion.replace(/^v/, '');
 
   console.log(`🚀 Starting release process for v${targetVersion}`);
+
+  // Check signing key setup first
+  checkSigningKey();
 
   // Step 1: Update version files
   updateVersionFiles(targetVersion);
