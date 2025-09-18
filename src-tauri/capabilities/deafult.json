@@ -30,6 +30,13 @@
 		},
 		"clipboard-manager:default",
 		"notification:default",
-		"global-shortcut:default"
+		"global-shortcut:default",
+		"core:app:default",
+		"core:app:allow-version",
+		"updater:default",
+		"updater:allow-check",
+		"updater:allow-download",
+		"updater:allow-download-and-install",
+		"updater:allow-install"
 	]
 }

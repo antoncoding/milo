@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { getVersion } from "@tauri-apps/api/app";
 import { useEffect, useState } from "react";
 import { backendFormatToShortcut, Shortcut } from "../utils/keyboardUtils";
 import { updateManager, UpdateInfo } from "../utils/updater";
@@ -11,6 +12,8 @@ export function InfoPage() {
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [currentVersion, setCurrentVersion] = useState<string>("");
 
   // Load initial settings and check for updates
   useEffect(() => {
@@ -50,6 +53,9 @@ export function InfoPage() {
     };
 
     loadSettings();
+    getVersion().then(setCurrentVersion).catch((error) => {
+      console.error("❌ Failed to get app version:", error);
+    });
     // Check for updates 2 seconds after loading to avoid blocking UI
     setTimeout(checkForUpdatesOnLaunch, 2000);
   }, []);
@@ -62,9 +68,13 @@ export function InfoPage() {
       if (!update) {
         // Show a message that no updates are available
         console.log('No updates available');
+        setStatusMessage(currentVersion ? `Milo v${currentVersion} is up to date!` : 'Milo is up to date!');
+      } else {
+        setStatusMessage(null);
       }
     } catch (error) {
       console.error('Failed to check for updates:', error);
+      setStatusMessage('Failed to check for updates. Please try again.');
     } finally {
       setIsCheckingUpdate(false);
     }
@@ -194,6 +204,12 @@ export function InfoPage() {
               <p className="text-xs text-text-secondary">
                 {downloadProgress}% - The app will restart automatically when complete
               </p>
+            </div>
+          )}
+
+          {statusMessage && !updateInfo && !isDownloading && (
+            <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-xs text-green-800 dark:text-green-200">
+              {statusMessage}
             </div>
           )}
         </div>
