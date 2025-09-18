@@ -83,6 +83,7 @@ pub fn run() {
             api::save_settings,
             api::get_settings,
             api::show_settings,
+            api::relaunch_app,
             core::transform_clipboard,
             core::transform_clip_with_setting,
             shortcuts::get_current_shortcut,

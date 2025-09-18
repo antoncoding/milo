@@ -1,11 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
 import { getVersion } from "@tauri-apps/api/app";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { backendFormatToShortcut, Shortcut } from "../utils/keyboardUtils";
 import { updateManager, UpdateInfo } from "../utils/updater";
 import miloLogo from "../assets/icon.png";
 
 export function InfoPage() {
+  const isDev = import.meta.env.DEV;
   const [shortcut, setShortcut] = useState<Shortcut>([]);
   const [shortcutEnabled, setShortcutEnabled] = useState(true);
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
@@ -13,10 +14,19 @@ export function InfoPage() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusVariant, setStatusVariant] = useState<'neutral' | 'success' | 'error'>('neutral');
   const [currentVersion, setCurrentVersion] = useState<string>("");
+  const totalBytesRef = useRef<number | null>(null);
+  const downloadedBytesRef = useRef(0);
+  const initRef = useRef(false);
 
   // Load initial settings and check for updates
   useEffect(() => {
+    if (initRef.current) {
+      return;
+    }
+    initRef.current = true;
+
     const loadSettings = async () => {
       try {
         console.log("🔄 Frontend: Loading initial settings...");
@@ -57,10 +67,21 @@ export function InfoPage() {
       console.error("❌ Failed to get app version:", error);
     });
     // Check for updates 2 seconds after loading to avoid blocking UI
-    setTimeout(checkForUpdatesOnLaunch, 2000);
-  }, []);
+    if (isDev) {
+      setStatusVariant('neutral');
+      setStatusMessage('Auto-updater is disabled in dev builds. Run a packaged app to test updates.');
+    } else {
+      setTimeout(checkForUpdatesOnLaunch, 2000);
+    }
+  }, [isDev]);
 
   const checkForUpdates = async () => {
+    if (isDev) {
+      setStatusVariant('neutral');
+      setStatusMessage('Auto-updater is disabled in dev builds. Run a packaged app to test updates.');
+      return;
+    }
+
     try {
       setIsCheckingUpdate(true);
       const update = await updateManager.checkForUpdates();
@@ -68,12 +89,14 @@ export function InfoPage() {
       if (!update) {
         // Show a message that no updates are available
         console.log('No updates available');
+        setStatusVariant('success');
         setStatusMessage(currentVersion ? `Your Milo version v${currentVersion} is up to date!` : 'Milo is up to date!');
       } else {
         setStatusMessage(null);
       }
     } catch (error) {
       console.error('Failed to check for updates:', error);
+      setStatusVariant('error');
       setStatusMessage('Failed to check for updates. Please try again.');
     } finally {
       setIsCheckingUpdate(false);
@@ -81,16 +104,40 @@ export function InfoPage() {
   };
 
   const downloadUpdate = async () => {
+    if (isDev) {
+      setStatusVariant('neutral');
+      setStatusMessage('Auto-updater is disabled in dev builds. Run a packaged app to test updates.');
+      return;
+    }
+
     if (!updateInfo) return;
 
     try {
       setIsDownloading(true);
+      totalBytesRef.current = null;
+      downloadedBytesRef.current = 0;
+      setDownloadProgress(0);
+      console.log('⬇️ Frontend: Starting update download');
       updateManager.setProgressCallback((event) => {
+        console.log('⬇️ Frontend: Download event received', event);
         if (event.event === 'Started') {
+          totalBytesRef.current = event.data.contentLength ?? null;
+          downloadedBytesRef.current = 0;
           setDownloadProgress(0);
         } else if (event.event === 'Progress') {
-          const progress = Math.round((event.data.chunkLength / event.data.contentLength) * 100);
-          setDownloadProgress(progress);
+          downloadedBytesRef.current += event.data.chunkLength ?? 0;
+          if (totalBytesRef.current && totalBytesRef.current > 0) {
+            const progress = Math.min(100, Math.round((downloadedBytesRef.current / totalBytesRef.current) * 100));
+            setDownloadProgress(progress);
+          } else {
+            setDownloadProgress((prev) => (prev < 99 ? prev + 1 : prev));
+          }
+        } else if (event.event === 'Finished') {
+          setDownloadProgress(100);
+          setIsDownloading(false);
+          setUpdateInfo(null);
+          setStatusVariant('success');
+          setStatusMessage('Update downloaded. Milo will restart once installation finishes.');
         }
       });
 
@@ -98,6 +145,10 @@ export function InfoPage() {
     } catch (error) {
       console.error('Failed to download update:', error);
       setIsDownloading(false);
+      setStatusVariant('error');
+      setStatusMessage(`Failed to download update. ${error instanceof Error ? error.message : ''}`.trim());
+    } finally {
+      downloadedBytesRef.current = 0;
     }
   };
 
@@ -207,8 +258,16 @@ export function InfoPage() {
             </div>
           )}
 
-          {statusMessage && !updateInfo && !isDownloading && (
-            <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-xs text-green-800 dark:text-green-200">
+          {statusMessage && (
+            <div
+              className={`p-3 rounded-lg text-xs ${
+                statusVariant === 'error'
+                  ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
+                  : statusVariant === 'success'
+                  ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
+                  : 'bg-background-secondary/80 border border-border-primary text-text-secondary'
+              }`}
+            >
               {statusMessage}
             </div>
           )}

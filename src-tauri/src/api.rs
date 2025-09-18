@@ -1,4 +1,4 @@
-use tauri::Manager;
+use tauri::{AppHandle, Manager};
 
 use crate::{
     settings::{api_key_file_path, litellm_api_key_file_path, Settings},
@@ -88,5 +88,13 @@ pub async fn show_settings(window: tauri::Window) -> Result<(), String> {
         std::thread::sleep(std::time::Duration::from_millis(100));
         settings_window.set_focus().map_err(|e| e.to_string())?;
     }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn relaunch_app(app: AppHandle) -> Result<(), String> {
+    std::thread::spawn(move || {
+        app.restart();
+    });
     Ok(())
 }
