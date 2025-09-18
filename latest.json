@@ -1,0 +1,11 @@
+{
+  "version": "v0.1.10",
+  "notes": "Milo v0.1.10 - Bug fixes and improvements",
+  "pub_date": "2025-09-18T06:28:36.038Z",
+  "platforms": {
+    "darwin-aarch64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTcUlTbEk4MGg5N2YwMW8yWjh3ZkdVM1V1VkY0aU9rZHQydkVzcWdBcytMNElwMHdYcm45QWVTYTcvM0hjdEw0aExZR1V5cW9JYS9ZWDFBbThSY0lnNlE4R1pSL3pUcHdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzU4MTc2OTE1CWZpbGU6TWlsby5hcHAudGFyLmd6CmZnU20wcXNRaldheDBZTTlsUFhxOG92UnRtYWRVclZzSUhvNmRFanhoRVV6bVFvN2JISTNlZy9kS1QwcEJidVU0aWg5Ui93RDZrckxLWVlzblJtUENBPT0K",
+      "url": "https://github.com/antoncoding/milo/releases/download/v0.1.10/Milo.app.tar.gz"
+    }
+  }
+}
