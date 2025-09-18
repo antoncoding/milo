@@ -1,10 +1,10 @@
 {
   "version": "v0.1.10",
   "notes": "Milo v0.1.10 - Bug fixes and improvements",
-  "pub_date": "2025-09-18T06:28:36.038Z",
+  "pub_date": "2025-09-18T06:34:01.015Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTcUlTbEk4MGg5N2YwMW8yWjh3ZkdVM1V1VkY0aU9rZHQydkVzcWdBcytMNElwMHdYcm45QWVTYTcvM0hjdEw0aExZR1V5cW9JYS9ZWDFBbThSY0lnNlE4R1pSL3pUcHdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzU4MTc2OTE1CWZpbGU6TWlsby5hcHAudGFyLmd6CmZnU20wcXNRaldheDBZTTlsUFhxOG92UnRtYWRVclZzSUhvNmRFanhoRVV6bVFvN2JISTNlZy9kS1QwcEJidVU0aWg5Ui93RDZrckxLWVlzblJtUENBPT0K",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTcUlTbEk4MGg5N2FEVnovcklVcHc5Nlo1NlhSSS9GdjIvUVNKRUNVYmVDT1pTcXpZY2c2dk5wZXAvZnp0UVhXL2ZlM0ZkT3AzdEliaXJtNkpUQm41bGx5M3BZdWtVSFFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzU4MTc3MjQwCWZpbGU6TWlsby5hcHAudGFyLmd6CmYwM0pNV2VkcjdVcHFxa2ZENjBxR0VjeUZzZ2cvaEJSc21NeWlVSnNZS1lyQzRlSmpEcEZnMmQwSjMwNnVPNHYyY0lsWWQ5czVLa1g2MExRb1J2TER3PT0K",
       "url": "https://github.com/antoncoding/milo/releases/download/v0.1.10/Milo.app.tar.gz"
     }
   }
