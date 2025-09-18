@@ -91,14 +91,7 @@ Your Tauri signing key is located at `~/.tauri/milo.key`. **CRITICAL:** Back thi
 
 ### 🚀 Release Process
 
-```bash
-# Export signing key
-export TAURI_SIGNING_PRIVATE_KEY=$(cat ~/.tauri/milo.key)
-
-# Automated release
-pnpm release v0.1.9
-```
-
+See [`RELEASE.md`](RELEASE.md) for complete release instructions.
 
 ### 📁 Project Structure
 

@@ -81,10 +81,18 @@ function App() {
         await invoke("transform_clipboard", {
           promptKey: currentSettings.selected_tone || "Improve Writing",
         });
-        
+
         console.log("Clipboard transformation complete");
       } catch (error) {
         console.error("Failed to transform clipboard:", error);
+
+        // Show error notification to user
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        sendNotification({
+          title: 'Milo - Transform Error',
+          body: errorMessage,
+          icon: '/icon.png'
+        });
       }
     });
 

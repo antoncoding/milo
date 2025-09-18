@@ -20,7 +20,7 @@
   },
   "productName": "Milo",
   "mainBinaryName": "Milo",
-  "version": "0.1.12",
+  "version": "0.1.11",
   "identifier": "com.milo.dev",
   "plugins": {
     "updater": {

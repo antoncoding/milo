@@ -1,4 +1,4 @@
-use tauri::Manager;
+use tauri::{Manager, Emitter};
 use arboard::Clipboard;
 
 use crate::transform::transform_text;
@@ -54,8 +54,9 @@ pub async fn transform_clipboard(
         cleaned_transformed,
     )?;
 
-    // Success! Don't show notification - causes crashes on macOS
-    // User will see the transformed text in their clipboard
+    // Emit success notification
+    let notification_message = format!("Successfully transformed with \"{}\" tone", prompt_key);
+    let _ = handle.emit("transformation_complete", notification_message);
 
     Ok(())
 }

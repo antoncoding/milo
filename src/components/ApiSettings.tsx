@@ -177,12 +177,36 @@ export function Settings() {
     toggleEnabled();
   };
 
+  const deleteUsageKey = async () => {
+    const userConfirmed = await ask('Are you sure you want to delete your usage key? You will need to enter a new one to use Milo.', {
+      title: 'Delete Usage Key',
+      kind: 'warning'
+    });
+
+    if (userConfirmed) {
+      try {
+        setSaving(true);
+        await invoke('save_litellm_api_key', { key: '' });
+        setUsageKey('');
+        setUsageKeyPreview('');
+        setHasKey(false);
+        await message('Usage key deleted successfully!', { title: 'Success', kind: 'info' });
+      } catch (error) {
+        console.error('Failed to delete usage key:', error);
+        await message('Failed to delete usage key. Please try again.', { title: 'Error', kind: 'error' });
+      } finally {
+        setSaving(false);
+      }
+    }
+  };
+
+
   const clearHistory = async () => {
     const userConfirmed = await ask('Are you sure you want to clear all transformation history? This action cannot be undone.', {
       title: 'Clear History',
       kind: 'warning'
     });
-    
+
     if (userConfirmed) {
       try {
         await invoke('clear_transformation_history');
@@ -220,25 +244,23 @@ export function Settings() {
       <div className="bg-background-secondary p-6 rounded-lg border border-border-primary">
         <div className="mb-4">
           <h2 className="text-lg text-text-primary">Usage Key</h2>
-          <p className="text-sm text-text-secondary">Your key for accessing text transformations</p>
+          <p className="text-sm text-text-secondary">
+            {!hasKey ? "You need a usage key to transform text with Milo" : "Your key for accessing text transformations"}
+          </p>
         </div>
 
         <div className="space-y-4">
           {!hasKey ? (
             /* No Key State */
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
-                <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                Not Ready
-              </div>
-
-              <div className="bg-accent-primary/10 border border-accent-primary/30 rounded-lg p-4">
-                <p className="text-sm text-text-primary mb-3">
-                  You need a usage key to transform text with Milo.
-                </p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
+                  <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                  Not Ready
+                </div>
                 <button
                   onClick={openWebsite}
-                  className="inline-flex items-center px-4 py-2 bg-accent-primary text-white text-sm rounded-lg hover:bg-accent-secondary transition-colors"
+                  className="inline-flex items-center px-3 py-2 bg-accent-primary text-white text-sm rounded-lg hover:bg-accent-secondary transition-colors"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -256,7 +278,7 @@ export function Settings() {
                   type="password"
                   value={usageKey}
                   onChange={(e) => setUsageKey(e.target.value)}
-                  placeholder="milo-..."
+                  placeholder="sk-..."
                   className="w-full px-3 py-2 border border-border-primary rounded-lg focus:ring-2 focus:ring-accent-primary focus:border-accent-primary bg-background-primary text-text-primary"
                 />
                 <button
@@ -276,6 +298,12 @@ export function Settings() {
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                   Ready
                 </div>
+                <button
+                  onClick={deleteUsageKey}
+                  className="px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary transition-colors"
+                >
+                  Delete
+                </button>
               </div>
 
               <div className="bg-background-tertiary p-3 rounded-lg border border-border-primary">
